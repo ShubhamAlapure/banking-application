@@ -63,8 +63,8 @@ export default function DashboardPage() {
       }
 
       // 3. Fetch recent 5 transactions
-      const accountIds = (accountsData || []).map((a) => a.id);
-      const accountNumbers = (accountsData || []).map((a) => a.account_number);
+      const accountIds = (accountsData || []).map((a: any) => a.id);
+      const accountNumbers = (accountsData || []).map((a: any) => a.account_number);
 
       if (accountIds.length > 0) {
         const { data: txnsData } = await supabase

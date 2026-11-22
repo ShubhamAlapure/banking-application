@@ -86,8 +86,8 @@ function TransferContent() {
         if (accountsData) {
           setAccounts(accountsData as Account[]);
           const defaultAcc =
-            accountsData.find((a) => a.id === searchParams.get('from')) ||
-            accountsData.find((a) => a.status === 'ACTIVE') ||
+            (accountsData as any[]).find((a: any) => a.id === searchParams.get('from')) ||
+            (accountsData as any[]).find((a: any) => a.status === 'ACTIVE') ||
             accountsData[0];
           if (defaultAcc) setFromAccountId(defaultAcc.id);
         }
@@ -100,7 +100,7 @@ function TransferContent() {
 
         if (benData) {
           setBeneficiaries(benData as Beneficiary[]);
-          const queryBen = benData.find((b) => b.id === searchParams.get('beneficiary'));
+          const queryBen = (benData as any[]).find((b: any) => b.id === searchParams.get('beneficiary'));
           if (queryBen) {
             setToAccountNumber(queryBen.account_number);
           } else if (benData.length > 0) {
@@ -926,7 +926,7 @@ function TransferContent() {
                 setOtpCode('');
                 setIdempotencyKey(generateIdempotencyKey());
               }}
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition-colors"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 rounded-xl text-xs font-bold transition-colors"
             >
               <span>Make Another Transfer</span>
             </button>

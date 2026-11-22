@@ -55,8 +55,8 @@ export default function HistoryPage() {
           .select('id, account_number')
           .eq('owner_id', user.id);
 
-        const accountIds = (accountsData || []).map((a) => a.id);
-        const accountNumbers = (accountsData || []).map((a) => a.account_number);
+        const accountIds = (accountsData || []).map((a: any) => a.id);
+        const accountNumbers = (accountsData || []).map((a: any) => a.account_number);
 
         if (accountIds.length === 0) {
           setLoading(false);
@@ -189,7 +189,7 @@ export default function HistoryPage() {
           type="button"
           onClick={handleExportCSV}
           disabled={filtered.length === 0}
-          className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-semibold shadow-sm transition-all disabled:opacity-40"
+          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all disabled:opacity-40"
         >
           <Download className="w-4 h-4" />
           <span>Export CSV Statement</span>

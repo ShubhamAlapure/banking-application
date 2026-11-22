@@ -15,7 +15,7 @@ import {
   User,
   Menu,
   X,
-  AlertTriangle,
+  ShieldAlert,
 } from 'lucide-react';
 import { Profile } from '@/types/database';
 
@@ -47,7 +47,7 @@ export function Navbar() {
           } else {
             setProfile({
               id: user.id,
-              full_name: user.user_metadata?.full_name || 'Demo User',
+              full_name: user.user_metadata?.full_name || 'Demo Customer',
               role: user.user_metadata?.role || 'customer',
               phone_masked: '+91 98*** **123',
               created_at: '',
@@ -88,27 +88,34 @@ export function Navbar() {
   const isAdmin = profile?.role === 'admin';
 
   return (
-    <header className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-sm">
-      {/* Top Prominent Mandatory Simulation Banner */}
-      <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white text-xs font-bold py-1 px-4 text-center tracking-wider uppercase flex items-center justify-center gap-2 shadow-inner">
-        <AlertTriangle className="w-3.5 h-3.5" />
-        <span>DEMO – SIMULATED BANK</span>
-        <span className="hidden sm:inline font-normal text-amber-100">| Fictitious data only • No real transactions</span>
+    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-xs">
+      {/* Refined Top Simulation Notification Bar */}
+      <div className="bg-amber-50/90 border-b border-amber-200/70 text-amber-900 py-1.5 px-4 text-xs flex items-center justify-center gap-2">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500 text-white font-bold text-[10px] tracking-wider uppercase shadow-xs">
+          <ShieldAlert className="w-3 h-3" />
+          DEMO – SIMULATED BANK
+        </span>
+        <span className="font-medium text-amber-800">
+          Academic Prototype • Fictitious data only • No real funds or SMS
+        </span>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo & Brand */}
           <div className="flex items-center gap-3">
-            <Link href={isAdmin ? '/admin' : '/dashboard'} className="flex items-center gap-2.5 group">
-              <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-200 group-hover:bg-indigo-700 transition-colors">
+            <Link href={isAdmin ? '/admin' : '/dashboard'} className="flex items-center gap-3 group">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-100 group-hover:bg-indigo-700 transition-colors">
                 <Building2 className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-lg font-black tracking-tight text-slate-900 block leading-tight">
-                  Apex Trust <span className="text-indigo-600">Bank</span>
-                </span>
-                <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-lg font-black tracking-tight text-slate-900 leading-tight">
+                    Apex Trust
+                  </span>
+                  <span className="text-lg font-black text-indigo-600 leading-tight">Bank</span>
+                </div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
                   Scaling Agile Prototype
                 </span>
               </div>
@@ -116,15 +123,15 @@ export function Navbar() {
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-1.5">
             {profile && isCustomer && (
               <>
                 <Link
                   href="/dashboard"
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
                     pathname === '/dashboard'
-                      ? 'bg-indigo-50 text-indigo-700'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                      ? 'bg-indigo-50 text-indigo-700 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                   }`}
                 >
                   <LayoutDashboard className="w-4 h-4" />
@@ -133,10 +140,10 @@ export function Navbar() {
 
                 <Link
                   href="/transfer"
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
                     pathname === '/transfer'
-                      ? 'bg-indigo-50 text-indigo-700'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                      ? 'bg-indigo-50 text-indigo-700 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                   }`}
                 >
                   <SendHorizontal className="w-4 h-4" />
@@ -145,10 +152,10 @@ export function Navbar() {
 
                 <Link
                   href="/beneficiaries"
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
                     pathname === '/beneficiaries'
-                      ? 'bg-indigo-50 text-indigo-700'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                      ? 'bg-indigo-50 text-indigo-700 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                   }`}
                 >
                   <Users className="w-4 h-4" />
@@ -157,10 +164,10 @@ export function Navbar() {
 
                 <Link
                   href="/history"
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
                     pathname === '/history'
-                      ? 'bg-indigo-50 text-indigo-700'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                      ? 'bg-indigo-50 text-indigo-700 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                   }`}
                 >
                   <History className="w-4 h-4" />
@@ -172,10 +179,10 @@ export function Navbar() {
             {profile && isAdmin && (
               <Link
                 href="/admin"
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
                   pathname.startsWith('/admin')
-                    ? 'bg-purple-50 text-purple-700 font-semibold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
               >
                 <ShieldCheck className="w-4 h-4 text-purple-600" />
@@ -187,16 +194,16 @@ export function Navbar() {
           {/* User Profile / Auth State */}
           <div className="hidden md:flex items-center gap-3">
             {loading ? (
-              <div className="w-24 h-8 bg-slate-100 rounded-lg animate-pulse" />
+              <div className="w-24 h-8 bg-slate-100 rounded-xl animate-pulse" />
             ) : profile ? (
               <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
                 <div className="text-right">
                   <div className="flex items-center gap-1.5 justify-end">
-                    <span className="text-sm font-semibold text-slate-800 leading-tight">
+                    <span className="text-xs font-bold text-slate-800 leading-tight">
                       {profile.full_name}
                     </span>
                     <span
-                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider ${
+                      className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded-full uppercase tracking-wider ${
                         isAdmin
                           ? 'bg-purple-100 text-purple-800 border border-purple-200'
                           : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
@@ -205,14 +212,14 @@ export function Navbar() {
                       {profile.role}
                     </span>
                   </div>
-                  <span className="text-xs text-slate-500 font-mono">{profile.phone_masked}</span>
+                  <span className="text-[11px] text-slate-400 font-mono">{profile.phone_masked}</span>
                 </div>
 
                 <button
                   type="button"
                   onClick={handleLogout}
                   title="Sign out"
-                  className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                  className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors border border-transparent hover:border-rose-100"
                   aria-label="Sign out"
                 >
                   <LogOut className="w-4 h-4" />
@@ -222,15 +229,15 @@ export function Navbar() {
               <div className="flex items-center gap-2">
                 <Link
                   href="/login"
-                  className="px-3.5 py-1.5 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="px-4 py-2 text-xs font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/register"
-                  className="px-3.5 py-1.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition-colors"
+                  className="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition-colors"
                 >
-                  Register
+                  Open Account
                 </Link>
               </div>
             )}
@@ -241,7 +248,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-slate-600 hover:bg-slate-100"
+              className="p-2 rounded-xl text-slate-600 hover:bg-slate-100"
               aria-label="Toggle mobile menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -258,33 +265,33 @@ export function Navbar() {
               <Link
                 href="/dashboard"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-base font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"
               >
-                <LayoutDashboard className="w-5 h-5" />
+                <LayoutDashboard className="w-4 h-4" />
                 Dashboard
               </Link>
               <Link
                 href="/transfer"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-base font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"
               >
-                <SendHorizontal className="w-5 h-5" />
+                <SendHorizontal className="w-4 h-4" />
                 Transfer Money
               </Link>
               <Link
                 href="/beneficiaries"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-base font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"
               >
-                <Users className="w-5 h-5" />
+                <Users className="w-4 h-4" />
                 Beneficiaries
               </Link>
               <Link
                 href="/history"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-base font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"
               >
-                <History className="w-5 h-5" />
+                <History className="w-4 h-4" />
                 Transactions
               </Link>
             </>
@@ -294,9 +301,9 @@ export function Navbar() {
             <Link
               href="/admin"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-base font-medium text-purple-700 bg-purple-50"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-purple-700 bg-purple-50"
             >
-              <ShieldCheck className="w-5 h-5" />
+              <ShieldCheck className="w-4 h-4" />
               Admin Audit & Control
             </Link>
           )}
@@ -306,7 +313,7 @@ export function Navbar() {
               <>
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4 text-slate-500" />
-                  <span className="text-sm font-semibold">{profile.full_name}</span>
+                  <span className="text-xs font-bold">{profile.full_name}</span>
                 </div>
                 <button
                   type="button"
@@ -314,7 +321,7 @@ export function Navbar() {
                     setMobileMenuOpen(false);
                     handleLogout();
                   }}
-                  className="flex items-center gap-1 text-sm text-rose-600 font-semibold"
+                  className="flex items-center gap-1 text-xs text-rose-600 font-bold"
                 >
                   <LogOut className="w-4 h-4" />
                   Logout
@@ -325,16 +332,16 @@ export function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-1/2 py-2 text-center text-sm font-medium border border-slate-300 rounded-lg"
+                  className="w-1/2 py-2 text-center text-xs font-bold border border-slate-300 rounded-xl"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-1/2 py-2 text-center text-sm font-semibold bg-indigo-600 text-white rounded-lg"
+                  className="w-1/2 py-2 text-center text-xs font-bold bg-indigo-600 text-white rounded-xl"
                 >
-                  Register
+                  Open Account
                 </Link>
               </div>
             )}
