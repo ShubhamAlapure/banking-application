@@ -84,12 +84,16 @@ export async function POST(req: NextRequest) {
     const primaryAccount =
       accounts.find((a) => a.account_type === 'SAVINGS') || accounts[0];
 
+    const { data: authUserData } = await serviceClient.auth.admin.getUserById(matchedProfile.id);
+    const userEmail = authUserData?.user?.email || '';
+
     return NextResponse.json({
       success: true,
       user: {
         id: matchedProfile.id,
         fullName: matchedProfile.full_name,
         phone: matchedProfile.phone_masked,
+        email: userEmail,
       },
       account: {
         accountNumber: primaryAccount.account_number,
