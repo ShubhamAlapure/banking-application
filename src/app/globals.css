@@ -1,8 +1,23 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
+  color-scheme: light dark;
+
+  &:has(> head > meta[name="color-scheme"][content="dark"]) {
+    color-scheme: dark;
+  }
+  &:has(> head > meta[name="color-scheme"][content="light"]) {
+    color-scheme: light;
+  }
+}
+
+.dark {
+  --background: #0b0f19;
+  --foreground: #f8fafc;
 }
 
 @theme inline {
@@ -28,6 +43,141 @@ body {
     radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.28) 1.2px, transparent 0);
   background-size: 100% 100%, 28px 28px;
   background-attachment: fixed;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Luxury Obsidian Dark Theme for Banking Core */
+html.dark,
+html.dark body {
+  background-color: #0b0f19 !important;
+  color: #f1f5f9 !important;
+
+  /* Deep space navy with illuminated indigo celestial ambient core */
+  background-image: 
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(99, 102, 241, 0.16), transparent 70%),
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.08) 1.2px, transparent 0);
+  background-size: 100% 100%, 28px 28px;
+  background-attachment: fixed;
+}
+
+/* Dark Mode Universal Surface & Component Theming */
+.dark .bg-white:not(.keep-white) {
+  background-color: #111827 !important;
+}
+
+.dark .bg-slate-50:not(.keep-light) {
+  background-color: #0f172a !important;
+}
+
+.dark .bg-slate-100:not(.keep-light) {
+  background-color: #1e293b !important;
+}
+
+.dark .bg-slate-200:not(.keep-light) {
+  background-color: #334155 !important;
+}
+
+/* Borders in Dark Mode */
+.dark .border-slate-100 {
+  border-color: #1e293b !important;
+}
+
+.dark .border-slate-200,
+.dark .border-slate-200\/90,
+.dark .border-slate-200\/80,
+.dark .border-slate-200\/70 {
+  border-color: #1f293d !important;
+}
+
+.dark .border-slate-300 {
+  border-color: #334155 !important;
+}
+
+/* Typography in Dark Mode */
+.dark .text-slate-900 {
+  color: #f8fafc !important;
+}
+
+.dark .text-slate-800 {
+  color: #f1f5f9 !important;
+}
+
+.dark .text-slate-700 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-slate-600 {
+  color: #94a3b8 !important;
+}
+
+.dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+.dark .text-slate-400 {
+  color: #64748b !important;
+}
+
+/* Hover States in Dark Mode */
+.dark .hover\:bg-slate-50:hover {
+  background-color: #1e293b !important;
+}
+
+.dark .hover\:bg-slate-100:hover {
+  background-color: #334155 !important;
+}
+
+.dark .hover\:text-slate-900:hover {
+  color: #ffffff !important;
+}
+
+/* Form Inputs, Selects & Textareas */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.dark select,
+.dark textarea {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: #6366f1 !important;
+  background-color: #111827 !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Toned Jewel Containers */
+.dark .bg-indigo-50 {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+  color: #a5b4fc !important;
+}
+
+.dark .bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+}
+
+.dark .bg-rose-50 {
+  background-color: rgba(244, 63, 94, 0.15) !important;
+}
+
+.dark .bg-purple-50 {
+  background-color: rgba(168, 85, 247, 0.15) !important;
+}
+
+.dark .bg-amber-50 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+}
+
+/* Preserve White Container for Scannable QR Codes */
+.keep-white {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
 }
 
 /* Keyframe animations for faintly illuminating grid tiles */
@@ -90,4 +240,18 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Scrollbar in Dark Mode */
+.dark ::-webkit-scrollbar-track {
+  background: #0b0f19 !important;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b !important;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155 !important;
 }

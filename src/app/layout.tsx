@@ -32,9 +32,17 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <meta name="color-scheme" content="light dark" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=localStorage.getItem("color-scheme");var p=window.matchMedia("(prefers-color-scheme: dark)").matches;var d=s==="dark"||(!s&&p);if(s){var m=document.querySelector('meta[name="color-scheme"]');if(m)m.content=s;}if(d){document.documentElement.classList.add("dark");}else{document.documentElement.classList.remove("dark");}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body
         suppressHydrationWarning
-        className="min-h-full flex flex-col text-slate-900 selection:bg-indigo-600 selection:text-white font-sans"
+        className="min-h-full flex flex-col text-slate-900 dark:text-slate-100 selection:bg-indigo-600 selection:text-white font-sans transition-colors duration-200"
       >
         <DemoProvider>
           <Navbar />
