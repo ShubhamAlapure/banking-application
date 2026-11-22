@@ -12,7 +12,7 @@ CREATE OR REPLACE FUNCTION public.initiate_transfer(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
 DECLARE
     v_user_id UUID;
@@ -286,7 +286,7 @@ BEGIN
 
     -- 10. Generate 6-digit OTP and store SHA-256 hash
     v_otp_code := lpad(floor(random() * 900000 + 100000)::text, 6, '0');
-    v_otp_hash := encode(digest(v_otp_code, 'sha256'), 'hex');
+    v_otp_hash := encode(sha256(v_otp_code::bytea), 'hex');
     v_expires_at := now() + interval '5 minutes';
 
     INSERT INTO public.otp_challenges (
@@ -327,7 +327,7 @@ CREATE OR REPLACE FUNCTION public.confirm_transfer(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
 DECLARE
     v_user_id UUID;
@@ -433,7 +433,7 @@ BEGIN
     END IF;
 
     -- 3. Verify OTP Hash
-    v_entered_hash := encode(digest(TRIM(p_otp), 'sha256'), 'hex');
+    v_entered_hash := encode(sha256(TRIM(p_otp)::bytea), 'hex');
 
     IF v_entered_hash != v_challenge.otp_hash THEN
         -- Increment attempt
@@ -594,7 +594,7 @@ CREATE OR REPLACE FUNCTION public.cancel_transfer(p_transaction_id UUID)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
 DECLARE
     v_user_id UUID;
@@ -644,7 +644,7 @@ CREATE OR REPLACE FUNCTION public.resend_transfer_otp(p_transaction_id UUID)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
 DECLARE
     v_user_id UUID;
@@ -679,7 +679,7 @@ BEGIN
 
     -- Generate new OTP
     v_new_otp := lpad(floor(random() * 900000 + 100000)::text, 6, '0');
-    v_new_hash := encode(digest(v_new_otp, 'sha256'), 'hex');
+    v_new_hash := encode(sha256(v_new_otp::bytea), 'hex');
     v_expires_at := now() + interval '5 minutes';
 
     INSERT INTO public.otp_challenges (
@@ -709,7 +709,7 @@ CREATE OR REPLACE FUNCTION public.admin_freeze_account(p_account_id UUID, p_reas
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
 DECLARE
     v_admin_id UUID;
@@ -750,7 +750,7 @@ CREATE OR REPLACE FUNCTION public.admin_unfreeze_account(p_account_id UUID, p_re
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
 DECLARE
     v_admin_id UUID;

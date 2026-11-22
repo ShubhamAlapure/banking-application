@@ -185,22 +185,20 @@ function TransferContent() {
     setSubmitting(true);
 
     try {
-      // Call Postgres SECURITY DEFINER function via Supabase RPC
-      const { data, error } = await supabase.rpc('initiate_transfer', {
-        p_from_account_id: fromAccountId,
-        p_to_account_number: toAccountNumber,
-        p_amount: numAmount,
-        p_remarks: remarks,
-        p_idempotency_key: idempotencyKey,
+      // Call dedicated transfer initiate endpoint (tries Postgres RPC with seamless server fallback)
+      const res = await fetch('/api/transfer/initiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromAccountId,
+          toAccountNumber,
+          amount: numAmount,
+          remarks,
+          idempotencyKey,
+        }),
       });
 
-      if (error) {
-        setErrorMessage(error.message || 'Transfer initiation failed.');
-        setSubmitting(false);
-        return;
-      }
-
-      const result = data as any;
+      const result = await res.json();
 
       if (!result.success) {
         setErrorMessage(result.message || 'Validation failed.');
@@ -257,18 +255,16 @@ function TransferContent() {
 
     setSubmitting(true);
     try {
-      const { data, error } = await supabase.rpc('confirm_transfer', {
-        p_transaction_id: transactionId,
-        p_otp: otpCode.trim(),
+      const res = await fetch('/api/transfer/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transactionId,
+          otp: otpCode.trim(),
+        }),
       });
 
-      if (error) {
-        setErrorMessage(error.message || 'OTP confirmation failed.');
-        setSubmitting(false);
-        return;
-      }
-
-      const result = data as any;
+      const result = await res.json();
 
       if (!result.success) {
         setErrorMessage(result.message);
@@ -298,7 +294,7 @@ function TransferContent() {
         type: 'success',
         title: 'Transfer Completed',
         message: `₹${numAmount.toLocaleString('en-IN')} transferred to ${
-          selectedBeneficiary?.beneficiary_name
+          selectedBeneficiary?.beneficiary_name || toAccountNumber
         }.`,
       });
     } catch (err: unknown) {
@@ -316,23 +312,22 @@ function TransferContent() {
     setSubmitting(true);
 
     try {
-      const { data, error } = await supabase.rpc('resend_transfer_otp', {
-        p_transaction_id: transactionId,
+      const res = await fetch('/api/transfer/resend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transactionId,
+        }),
       });
 
-      if (error) {
-        setErrorMessage(error.message);
-        setSubmitting(false);
-        return;
-      }
+      const resData = await res.json();
 
-      const res = data as any;
-      if (res.success && res.simulated_otp) {
+      if (resData.success && resData.simulated_otp) {
         addSimulatedSms({
           sender: 'VK-APEXBANK',
-          otp: res.simulated_otp,
+          otp: resData.simulated_otp,
           amount: numAmount,
-          recipient: selectedBeneficiary?.beneficiary_name,
+          recipient: selectedBeneficiary?.beneficiary_name || toAccountNumber,
           referenceNo: referenceNo || '',
         });
         setTimerSeconds(300);
@@ -343,6 +338,8 @@ function TransferContent() {
           title: 'OTP Resent',
           message: 'A new verification security code has been dispatched.',
         });
+      } else {
+        setErrorMessage(resData.message || 'Failed to resend OTP.');
       }
     } catch (err) {
       console.error('Resend OTP error:', err);
