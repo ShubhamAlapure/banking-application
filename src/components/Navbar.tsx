@@ -97,11 +97,11 @@ export function Navbar() {
           {/* Logo & Brand */}
           <div className="flex items-center gap-8">
             <Link href={profile ? (isAdmin ? '/admin' : '/dashboard') : '/'} className="flex items-center gap-3.5 group">
-              <div className="w-11 h-11 rounded-2xl overflow-hidden bg-white shadow-md shadow-indigo-100/80 border border-slate-200/80 group-hover:border-indigo-300 group-hover:shadow-indigo-200/50 transition-all flex items-center justify-center p-1">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-50 to-blue-50 border border-indigo-100 shadow-sm shadow-indigo-100 flex items-center justify-center p-1 group-hover:scale-105 group-hover:border-indigo-200 transition-all">
                 <img
-                  src="/logo.jpg"
+                  src="/logo.png"
                   alt="Apex Trust Bank"
-                  className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                  className="w-full h-full object-contain filter drop-shadow-xs"
                 />
               </div>
               <div>

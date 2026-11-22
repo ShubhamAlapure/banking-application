@@ -268,8 +268,8 @@ export default function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
             <div>
               <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-8 h-8 rounded-xl overflow-hidden bg-white p-1 border border-slate-200 shadow-2xs flex items-center justify-center">
-                  <img src="/logo.jpg" alt="Apex Trust Bank" className="w-full h-full object-contain" />
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-50 to-blue-50 p-1 border border-indigo-100 shadow-2xs flex items-center justify-center">
+                  <img src="/logo.png" alt="Apex Trust Bank" className="w-full h-full object-contain filter drop-shadow-xs" />
                 </div>
                 <span className="text-base font-black text-slate-900">Apex Trust Bank</span>
               </div>

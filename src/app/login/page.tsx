@@ -88,8 +88,8 @@ function LoginForm() {
       <div className="max-w-md w-full space-y-6">
         {/* Header Icon & Title */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-white p-2 shadow-lg shadow-indigo-100/80 border border-slate-200/80 mb-3.5">
-            <img src="/logo.jpg" alt="Apex Trust Bank" className="w-full h-full object-contain" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-tr from-indigo-50/80 via-white to-blue-50/80 p-2 shadow-md shadow-indigo-100/80 border border-indigo-100 mb-3.5">
+            <img src="/logo.png" alt="Apex Trust Bank" className="w-full h-full object-contain filter drop-shadow-xs" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
             Sign in to Online Banking
