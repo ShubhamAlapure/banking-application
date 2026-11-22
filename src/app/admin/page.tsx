@@ -36,7 +36,7 @@ export default function AdminPage() {
 
   // Freeze action modal
   const [selectedAcc, setSelectedAcc] = useState<Account | null>(null);
-  const [freezeReason, setFreezeReason] = useState<string>('Suspicious transaction pattern / Jury test');
+  const [freezeReason, setFreezeReason] = useState<string>('Suspicious transaction velocity / Compliance review');
   const [isFreezeModalOpen, setIsFreezeModalOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -153,7 +153,7 @@ export default function AdminPage() {
     try {
       const { data, error } = await supabase.rpc('admin_unfreeze_account', {
         p_account_id: account.id,
-        p_reason: 'Administrative release verified by jury',
+        p_reason: 'Administrative release approved by compliance officer',
       });
 
       if (error) {

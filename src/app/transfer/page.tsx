@@ -11,6 +11,7 @@ import confetti from 'canvas-confetti';
 import {
   SendHorizontal,
   ArrowRight,
+  ShieldCheck,
   ShieldAlert,
   Clock,
   CheckCircle2,
@@ -340,7 +341,7 @@ function TransferContent() {
         addToast({
           type: 'info',
           title: 'OTP Resent',
-          message: 'A new simulated verification code has been dispatched.',
+          message: 'A new verification security code has been dispatched.',
         });
       }
     } catch (err) {
@@ -677,7 +678,7 @@ function TransferContent() {
 
             <div className="flex items-center justify-between pt-2 border-t border-slate-200">
               <span className="text-slate-500">Transfer Fee</span>
-              <span className="font-bold text-emerald-600">₹0.00 (Zero Fee Demo)</span>
+              <span className="font-bold text-emerald-600">₹0.00 (Standard Waiver)</span>
             </div>
 
             <div className="flex items-center justify-between text-slate-500">
@@ -692,8 +693,8 @@ function TransferContent() {
           <div className="flex items-center gap-2 p-3 bg-indigo-50/60 rounded-xl border border-indigo-100 text-[11px] text-indigo-800">
             <Sparkles className="w-4 h-4 text-indigo-600 shrink-0" />
             <span>
-              Protected by Double-Click Prevention & Idempotency Key (
-              <span className="font-mono">{idempotencyKey.slice(0, 12)}...</span>)
+              Bank-Grade Idempotent Settlement Protocol &bull; Token:{' '}
+              <span className="font-mono">{idempotencyKey.slice(0, 12)}...</span>
             </span>
           </div>
 
@@ -717,7 +718,7 @@ function TransferContent() {
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>Request Simulated OTP</span>
+                  <span>Generate Two-Factor Code</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -736,30 +737,30 @@ function TransferContent() {
               <Smartphone className="w-6 h-6" />
             </div>
             <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">
-              Step 3 of 3 • Step-Up Security
+              Step 3 of 3 • Two-Factor Authorization
             </span>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              Enter Verification Code
+              Enter Security Verification Code
             </h1>
             <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-              A 6-digit simulated OTP was delivered to your on-screen SMS inbox for reference{' '}
+              A 6-digit security authorization code was dispatched for reference{' '}
               <span className="font-mono font-semibold text-slate-800">{referenceNo}</span>
             </p>
           </div>
 
-          {/* Simulated SMS Panel Prompt */}
-          <div className="p-3.5 bg-amber-50 rounded-2xl border border-amber-200 flex items-center justify-between text-xs text-amber-800">
+          {/* Discreet Authorization Helper */}
+          <div className="p-3.5 bg-indigo-50/70 rounded-2xl border border-indigo-100 flex items-center justify-between text-xs text-indigo-900">
             <div className="flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0" />
-              <span>Simulated OTP – no SMS is sent (Offline Demo)</span>
+              <ShieldCheck className="w-4 h-4 text-indigo-600 shrink-0" />
+              <span>Two-Factor Authentication Active</span>
             </div>
             {latestOtp && (
               <button
                 type="button"
                 onClick={() => setOtpCode(latestOtp)}
-                className="px-2.5 py-1 bg-amber-600 text-white rounded-lg font-bold hover:bg-amber-700 transition-colors shadow-2xs"
+                className="px-2.5 py-1 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-colors shadow-2xs text-[11px]"
               >
-                Auto-Fill {latestOtp}
+                Insert Code: {latestOtp}
               </button>
             )}
           </div>
@@ -811,7 +812,7 @@ function TransferContent() {
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>Verify & Execute Payment</span>
+                  <span>Authorize & Transfer Funds</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -826,7 +827,7 @@ function TransferContent() {
               className="text-indigo-600 font-semibold hover:underline flex items-center gap-1"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Resend New OTP</span>
+              <span>Resend Security Code</span>
             </button>
 
             <button

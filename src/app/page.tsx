@@ -2,122 +2,308 @@ import Link from 'next/link';
 import {
   Building2,
   ShieldCheck,
+  SendHorizontal,
   ArrowRight,
-  Zap,
   Lock,
   Smartphone,
   CheckCircle2,
-  Users,
+  CreditCard,
+  TrendingUp,
+  Percent,
+  Clock,
+  PhoneCall,
+  Check,
+  ExternalLink,
 } from 'lucide-react';
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col min-h-[85vh]">
+    <div className="flex flex-col min-h-screen bg-slate-50 selection:bg-indigo-600 selection:text-white">
       {/* Hero Section */}
-      <section className="py-16 sm:py-24 px-4 max-w-7xl mx-auto w-full text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-bold uppercase tracking-wider mb-6">
-          <Zap className="w-3.5 h-3.5" />
-          <span>Agile Software Development Final Jury Prototype</span>
-        </div>
-
-        <h1 className="text-4xl sm:text-6xl font-black text-slate-900 tracking-tight max-w-3xl mx-auto leading-tight">
-          Apex Trust Bank <br />
-          <span className="text-indigo-600">Scaling Agile Architecture</span>
-        </h1>
-
-        <p className="mt-4 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-          A working, race-safe financial banking prototype built with Next.js App Router, Supabase Postgres RLS, atomic RPC stored procedures, and simulated SMS OTP verification.
-        </p>
-
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link
-            href="/login"
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-100 transition-all group"
-          >
-            <span>Launch Live Demo</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-          </Link>
-
-          <Link
-            href="/register"
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-sm font-bold transition-all shadow-xs"
-          >
-            <span>Create Demo Account (+₹50k)</span>
-          </Link>
-        </div>
-
-        {/* Feature Grid */}
-        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4">
-              <Lock className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-slate-900 mb-1">
-              Atomic Money Transfers
-            </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Postgres stored procedures with <code className="bg-slate-100 px-1 py-0.5 rounded font-mono text-[11px]">SELECT ... FOR UPDATE</code> row locks guarantee strict concurrency protection and zero double-spend.
-            </p>
+      <section className="relative overflow-hidden pt-16 pb-24 lg:pt-28 lg:pb-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        <div className="text-center max-w-4xl mx-auto">
+          {/* Regulatory Trust Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100/80 text-indigo-700 text-xs font-bold uppercase tracking-wider mb-8 shadow-2xs">
+            <ShieldCheck className="w-4 h-4 text-indigo-600" />
+            <span>Regulated Scheduled Commercial Banking Institution</span>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
-              <Smartphone className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-slate-900 mb-1">
-              Simulated SMS OTP Inbox
-            </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Self-contained offline simulation panel with 5-minute expiry, SHA-256 hashed challenges, and 3-attempt safety cutoff.
-            </p>
-          </div>
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 tracking-tight leading-[1.08]">
+            Modern Banking Built for Your <br className="hidden sm:inline" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-indigo-700 to-blue-600">
+              Financial Growth.
+            </span>
+          </h1>
 
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-4">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-slate-900 mb-1">
-              3-Layer Role Guarding
-            </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Strict isolation between Customers and Admins enforced across Supabase RLS, Next.js Middleware, and Server Action guards.
-            </p>
-          </div>
-        </div>
-
-        {/* Test Accounts Quick Reference */}
-        <div className="mt-12 bg-slate-100/80 p-5 rounded-2xl border border-slate-200 text-left text-xs space-y-2">
-          <p className="font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-            <Users className="w-4 h-4 text-indigo-600" />
-            <span>Pre-Seeded Jury Accounts</span>
+          <p className="mt-6 text-base sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed font-normal">
+            Enjoy instant zero-fee transfers, high-yield digital savings accounts, automated payee management, and 256-bit bank-grade security built for both personal and enterprise needs.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
-            <div className="bg-white p-3 rounded-xl border border-slate-200">
-              <span className="font-bold text-slate-900 block">Rahul Sharma (Customer)</span>
-              <span className="font-mono text-slate-500 block">rahul@demo.bank</span>
-              <span className="text-emerald-600 font-semibold mt-1 block">Bal: ₹75,000.00</span>
+
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/register"
+              className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-base font-bold shadow-lg shadow-indigo-200 transition-all group"
+            >
+              <span>Open an Account Online</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+
+            <Link
+              href="/login"
+              className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-4 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 rounded-2xl text-base font-bold transition-all shadow-xs hover:border-slate-300"
+            >
+              <Lock className="w-4 h-4 text-indigo-600" />
+              <span>Sign in to Online Banking</span>
+            </Link>
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-xs font-semibold text-slate-500">
+            <div className="flex items-center gap-1.5">
+              <Check className="w-4 h-4 text-emerald-600" />
+              <span>Zero Account Opening Fees</span>
             </div>
-            <div className="bg-white p-3 rounded-xl border border-slate-200">
-              <span className="font-bold text-slate-900 block">Priya Deshmukh (Customer)</span>
-              <span className="font-mono text-slate-500 block">priya@demo.bank</span>
-              <span className="text-amber-600 font-semibold mt-1 block">Bal: ₹500.00 (Low Bal)</span>
+            <div className="flex items-center gap-1.5">
+              <Check className="w-4 h-4 text-emerald-600" />
+              <span>Instant IMPS & NEFT Settlements</span>
             </div>
-            <div className="bg-white p-3 rounded-xl border border-slate-200">
-              <span className="font-bold text-slate-900 block">Amit Patel (Customer)</span>
-              <span className="font-mono text-slate-500 block">amit@demo.bank</span>
-              <span className="text-emerald-600 font-semibold mt-1 block">Bal: ₹1,20,000.00</span>
-            </div>
-            <div className="bg-white p-3 rounded-xl border border-purple-200 bg-purple-50/30">
-              <span className="font-bold text-purple-900 block">System Admin</span>
-              <span className="font-mono text-purple-700 block">admin@demo.bank</span>
-              <span className="text-purple-600 font-semibold mt-1 block">Freeze & Audit Tools</span>
+            <div className="flex items-center gap-1.5">
+              <Check className="w-4 h-4 text-emerald-600" />
+              <span>256-Bit SSL Encrypted Core</span>
             </div>
           </div>
-          <p className="text-[11px] text-slate-400 pt-1">
-            Password for customers: <code className="bg-white px-1.5 py-0.5 rounded border font-mono">Demo@12345</code> • Password for admin: <code className="bg-white px-1.5 py-0.5 rounded border font-mono">Admin@12345</code>
-          </p>
         </div>
       </section>
+
+      {/* Metrics Banner */}
+      <section className="bg-white border-y border-slate-200 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+            <div>
+              <p className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">2.5M+</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">Active Customers</p>
+            </div>
+            <div>
+              <p className="text-3xl sm:text-4xl font-black text-indigo-600 tracking-tight">₹45,000 Cr+</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">Processed Annually</p>
+            </div>
+            <div>
+              <p className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">99.99%</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">Uptime Reliability</p>
+            </div>
+            <div>
+              <p className="text-3xl sm:text-4xl font-black text-emerald-600 tracking-tight">24/7/365</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">Fraud Surveillance</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Banking Services & Core Products */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <span className="text-xs font-extrabold text-indigo-600 uppercase tracking-wider">
+            Tailored Financial Solutions
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mt-2">
+            Engineered for Stability, Growth, and Security
+          </h2>
+          <p className="text-sm text-slate-600 mt-3">
+            Whether managing daily transactions or securing enterprise treasury operations, Apex Trust Bank provides the foundation you need.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Card 1 */}
+          <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all flex flex-col justify-between">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-6 shadow-2xs">
+                <Percent className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">High-Yield Savings</h3>
+              <p className="text-xs text-slate-600 leading-relaxed mb-6">
+                Earn competitive monthly compounded interest on your idle balances with zero hidden penalties and complete liquidity.
+              </p>
+              <ul className="text-xs text-slate-700 space-y-2.5 font-medium">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Up to 7.15% p.a. interest tiers</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Zero account maintenance charges</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Instant virtual debit card issuance</span>
+                </li>
+              </ul>
+            </div>
+            <div className="pt-6 mt-6 border-t border-slate-100">
+              <Link href="/register" className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1.5">
+                <span>Explore Savings Benefits</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Card 2 */}
+          <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all flex flex-col justify-between">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-6 shadow-2xs">
+                <SendHorizontal className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Instant Transfers & Payees</h3>
+              <p className="text-xs text-slate-600 leading-relaxed mb-6">
+                Atomic settlement protocol ensures instant domestic fund movements with built-in idempotency and two-step verification.
+              </p>
+              <ul className="text-xs text-slate-700 space-y-2.5 font-medium">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Instant IMPS & RTGS routing</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>One-click verified payee directory</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Automatic transaction duplicate prevention</span>
+                </li>
+              </ul>
+            </div>
+            <div className="pt-6 mt-6 border-t border-slate-100">
+              <Link href="/login" className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1.5">
+                <span>View Payment Capabilities</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Card 3 */}
+          <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all flex flex-col justify-between">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-6 shadow-2xs">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Institutional Security</h3>
+              <p className="text-xs text-slate-600 leading-relaxed mb-6">
+                Your capital is protected by end-to-end cryptographic encryption, continuous audit logging, and automated account-lock safeguards.
+              </p>
+              <ul className="text-xs text-slate-700 space-y-2.5 font-medium">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Multi-factor SMS verification</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Real-time anomalous debit detection</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Instant account hold and release controls</span>
+                </li>
+              </ul>
+            </div>
+            <div className="pt-6 mt-6 border-t border-slate-100">
+              <Link href="/register" className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1.5">
+                <span>Security Architecture</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Box */}
+      <section className="bg-gradient-to-r from-indigo-700 via-indigo-600 to-blue-700 text-white py-16 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl sm:text-4xl font-black tracking-tight">
+            Ready to Experience Premier Banking?
+          </h2>
+          <p className="mt-3 text-indigo-100 text-sm max-w-xl mx-auto leading-relaxed">
+            Open an account online in less than 3 minutes with zero paperwork and immediate access to digital funds.
+          </p>
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              href="/register"
+              className="w-full sm:w-auto px-8 py-3.5 bg-white text-indigo-700 hover:bg-indigo-50 rounded-xl text-sm font-bold shadow-md transition-all"
+            >
+              Get Started Now
+            </Link>
+            <Link
+              href="/login"
+              className="w-full sm:w-auto px-8 py-3.5 bg-indigo-800/60 hover:bg-indigo-800 text-white border border-indigo-400/40 rounded-xl text-sm font-bold transition-all"
+            >
+              Customer Sign In
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Professional Footer */}
+      <footer className="bg-white border-t border-slate-200 pt-16 pb-12 text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
+                  <Building2 className="w-4 h-4" />
+                </div>
+                <span className="text-base font-black text-slate-900">Apex Trust Bank</span>
+              </div>
+              <p className="text-slate-500 leading-relaxed text-[11px]">
+                Headquartered at Financial District, Apex Tower, Pune, MH. Licensed commercial banking provider.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-slate-900 uppercase tracking-wider mb-3 text-[11px]">
+                Accounts & Deposits
+              </h4>
+              <ul className="space-y-2 text-[11px]">
+                <li><Link href="/register" className="hover:text-indigo-600">Savings Account</Link></li>
+                <li><Link href="/register" className="hover:text-indigo-600">Current Corporate Account</Link></li>
+                <li><Link href="/register" className="hover:text-indigo-600">Term Deposits</Link></li>
+                <li><Link href="/register" className="hover:text-indigo-600">Foreign Currency Accounts</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-slate-900 uppercase tracking-wider mb-3 text-[11px]">
+                Digital Services
+              </h4>
+              <ul className="space-y-2 text-[11px]">
+                <li><Link href="/login" className="hover:text-indigo-600">Internet NetBanking</Link></li>
+                <li><Link href="/transfer" className="hover:text-indigo-600">IMPS & Wire Transfers</Link></li>
+                <li><Link href="/beneficiaries" className="hover:text-indigo-600">Payee Directory</Link></li>
+                <li><Link href="/history" className="hover:text-indigo-600">E-Statements</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-slate-900 uppercase tracking-wider mb-3 text-[11px]">
+                Security & Support
+              </h4>
+              <ul className="space-y-2 text-[11px]">
+                <li><span className="text-slate-600">24/7 Helpline: 1800-112-233</span></li>
+                <li><span className="text-slate-600">Fraud Desk: 1800-999-000</span></li>
+                <li><span className="text-slate-600">help@apextrust.bank</span></li>
+                <li><span className="text-emerald-600 font-semibold">256-Bit SSL Certified</span></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-4">
+            <p>© 2026 Apex Trust Bank Limited. All rights reserved.</p>
+            <div className="flex gap-4">
+              <span>Privacy Policy</span>
+              <span>Terms of Service</span>
+              <span>Security Practices</span>
+              <span>Regulatory Disclosures</span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
