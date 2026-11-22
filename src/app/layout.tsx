@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Apex Trust Bank | Premier Digital & Commercial Banking',
+  title: 'MIT Payments Bank | India\'s Premier Digital Banking Partner',
   description:
-    'Apex Trust Bank offers premier personal and corporate banking, high-yield digital savings, instant wire transfers, and enterprise-grade security.',
+    'MIT Payments Bank offers instant zero-fee transfers, high-yield digital savings, virtual debit cards, and 256-bit bank-grade security.',
 };
 
 export default function RootLayout({

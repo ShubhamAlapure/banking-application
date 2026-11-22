@@ -84,7 +84,7 @@ export default function RegisterPage() {
         addToast({
           type: 'success',
           title: 'Account Opened Successfully!',
-          message: 'Welcome to Apex Trust Bank. Your primary Savings account is now active.',
+          message: 'Welcome to MIT Payments Bank. Your primary digital account is now active.',
         });
 
         router.push('/dashboard');
@@ -102,14 +102,14 @@ export default function RegisterPage() {
     <div className="min-h-[85vh] flex items-center justify-center px-4 py-12">
       <div className="max-w-md w-full space-y-6">
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-tr from-indigo-50/80 via-white to-blue-50/80 p-2 shadow-md shadow-indigo-100/80 border border-indigo-100 mb-3.5">
-            <img src="/logo.png" alt="Apex Trust Bank" className="w-full h-full object-contain filter drop-shadow-xs" />
+          <div className="inline-flex items-center justify-center p-3 bg-white rounded-2xl shadow-sm border border-slate-200/90 mb-3.5">
+            <img src="/logo.png" alt="MIT Payments Bank" className="h-12 w-auto object-contain" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
-            Open a Premier Account
+            Open an MIT Account Online
           </h1>
           <p className="mt-1.5 text-xs sm:text-sm text-slate-500 font-medium">
-            Instant digital enrollment with zero paperwork and immediate activation
+            Instant digital enrollment with zero minimum balance and immediate activation
           </p>
         </div>
 
@@ -270,7 +270,7 @@ export default function RegisterPage() {
                   className="w-4 h-4 mt-0.5 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
                 />
                 <span>
-                  I acknowledge and accept the Apex Trust Bank Digital Account Terms, Privacy Policy, and electronic statements agreement.
+                  I acknowledge and accept the MIT Payments Bank Digital Account Terms, Privacy Policy, and electronic statements agreement.
                 </span>
               </label>
             </div>

@@ -88,14 +88,14 @@ function LoginForm() {
       <div className="max-w-md w-full space-y-6">
         {/* Header Icon & Title */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-tr from-indigo-50/80 via-white to-blue-50/80 p-2 shadow-md shadow-indigo-100/80 border border-indigo-100 mb-3.5">
-            <img src="/logo.png" alt="Apex Trust Bank" className="w-full h-full object-contain filter drop-shadow-xs" />
+          <div className="inline-flex items-center justify-center p-3 bg-white rounded-2xl shadow-sm border border-slate-200/90 mb-3.5">
+            <img src="/logo.png" alt="MIT Payments Bank" className="h-12 w-auto object-contain" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
-            Sign in to Online Banking
+            Sign in to NetBanking
           </h1>
           <p className="mt-1.5 text-xs sm:text-sm text-slate-500 font-medium">
-            Access your personal, corporate, and investment accounts
+            Access your MIT Payments Bank personal and merchant accounts
           </p>
         </div>
 
@@ -156,7 +156,7 @@ function LoginForm() {
                     addToast({
                       type: 'info',
                       title: 'Password Assistance',
-                      message: 'Please contact account support at 1800-APEX-BANK to reset access credentials.',
+                      message: 'Please contact account support at 1800-MIT-BANK to reset access credentials.',
                     })
                   }
                   className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"

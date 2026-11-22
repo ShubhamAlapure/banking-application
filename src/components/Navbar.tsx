@@ -97,22 +97,19 @@ export function Navbar() {
           {/* Logo & Brand */}
           <div className="flex items-center gap-8">
             <Link href={profile ? (isAdmin ? '/admin' : '/dashboard') : '/'} className="flex items-center gap-3.5 group">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-50 to-blue-50 border border-indigo-100 shadow-sm shadow-indigo-100 flex items-center justify-center p-1 group-hover:scale-105 group-hover:border-indigo-200 transition-all">
+              <div className="h-12 flex items-center justify-center px-2 py-1 bg-white rounded-xl border border-slate-200/80 shadow-2xs group-hover:border-rose-300 transition-colors">
                 <img
                   src="/logo.png"
-                  alt="Apex Trust Bank"
-                  className="w-full h-full object-contain filter drop-shadow-xs"
+                  alt="MIT Payments Bank"
+                  className="h-9 w-auto object-contain"
                 />
               </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xl font-black tracking-tight text-slate-900 leading-tight">
-                    Apex Trust
-                  </span>
-                  <span className="text-xl font-black text-indigo-600 leading-tight">Bank</span>
-                </div>
+              <div className="hidden sm:block">
+                <span className="text-xs font-bold text-slate-800 tracking-tight block leading-tight">
+                  MIT Payments Bank
+                </span>
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
-                  Premier Digital & Commercial Banking
+                  Digital & Retail Banking Core
                 </span>
               </div>
             </Link>

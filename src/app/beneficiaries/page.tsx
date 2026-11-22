@@ -42,7 +42,7 @@ export default function BeneficiariesPage() {
   const [nickname, setNickname] = useState('');
   const [beneficiaryName, setBeneficiaryName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
-  const [bankName, setBankName] = useState('Apex Commercial Bank');
+  const [bankName, setBankName] = useState('MIT Payments Bank');
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [unmaskedId, setUnmaskedId] = useState<string | null>(null);
@@ -163,7 +163,7 @@ export default function BeneficiariesPage() {
       setNickname('');
       setBeneficiaryName('');
       setAccountNumber('');
-      setBankName('Apex Commercial Bank');
+      setBankName('MIT Payments Bank');
       setIsAddOpen(false);
       loadData();
     } catch (err: unknown) {
@@ -503,7 +503,7 @@ export default function BeneficiariesPage() {
                   onChange={(e) => setBankName(e.target.value)}
                   className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
                 >
-                  <option value="Apex Commercial Bank">Apex Commercial Bank</option>
+                  <option value="MIT Payments Bank">MIT Payments Bank</option>
                   <option value="State Bank of India">State Bank of India</option>
                   <option value="HDFC Bank">HDFC Bank</option>
                   <option value="ICICI Bank">ICICI Bank</option>
