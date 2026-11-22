@@ -24,9 +24,16 @@ import {
   Sparkles,
   Gift,
   User,
+  ShieldCheck,
+  CheckCircle2,
+  Lock,
 } from 'lucide-react';
 import WelcomeBonusModal from '@/components/WelcomeBonusModal';
 import AddMoneyModal from '@/components/AddMoneyModal';
+import { BillsAndRecharges } from '@/components/dashboard/BillsAndRecharges';
+import { CreditAndLoans } from '@/components/dashboard/CreditAndLoans';
+import { OffersAndRewards } from '@/components/dashboard/OffersAndRewards';
+import ServiceModal, { ServiceType } from '@/components/dashboard/ServiceModal';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -41,6 +48,10 @@ export default function DashboardPage() {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showAddMoneyModal, setShowAddMoneyModal] = useState(false);
   const [selectedAccountForAddMoney, setSelectedAccountForAddMoney] = useState<Account | null>(null);
+
+  // Service Hub Modal State
+  const [activeService, setActiveService] = useState<ServiceType | null>(null);
+  const [showServiceModal, setShowServiceModal] = useState(false);
 
   const supabase = createClient();
 
@@ -148,7 +159,6 @@ export default function DashboardPage() {
         prev.map((a) => (a.id === selectedAccountForAddMoney.id ? { ...a, balance: newBalance } : a))
       );
     }
-    // Refresh full data to show new transaction
     handleRefresh();
   };
 
@@ -159,18 +169,32 @@ export default function DashboardPage() {
     setShowWelcomeModal(false);
   };
 
+  const handleOpenService = (service: ServiceType) => {
+    setActiveService(service);
+    setShowServiceModal(true);
+  };
+
+  const handleBalanceUpdated = (newBalance: number) => {
+    if (accounts.length > 0) {
+      setAccounts((prev) =>
+        prev.map((a, i) => (i === 0 ? { ...a, balance: newBalance } : a))
+      );
+    }
+    handleRefresh();
+  };
+
   const totalBalance = accounts.reduce((acc, curr) => acc + Number(curr.balance || 0), 0);
 
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-pulse space-y-6">
-        <div className="h-20 bg-slate-200 rounded-2xl w-full" />
+        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="h-44 bg-slate-200 rounded-2xl" />
-          <div className="h-44 bg-slate-200 rounded-2xl" />
-          <div className="h-44 bg-slate-200 rounded-2xl" />
+          <div className="h-44 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
+          <div className="h-44 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
+          <div className="h-44 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
         </div>
-        <div className="h-72 bg-slate-200 rounded-2xl" />
+        <div className="h-72 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
       </div>
     );
   }
@@ -178,11 +202,11 @@ export default function DashboardPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Welcome Banner & Quick Action Buttons */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/90 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#111827] p-6 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-2xs">
         <div className="flex items-center gap-4">
           <Link
             href="/profile"
-            className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-slate-200 hover:border-indigo-500 shadow-md transition-all shrink-0 bg-slate-100 group cursor-pointer"
+            className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-slate-200 dark:border-slate-700 hover:border-indigo-500 shadow-md transition-all shrink-0 bg-slate-100 dark:bg-slate-800 group cursor-pointer"
             title="Click to Manage Profile & Avatar"
           >
             <Image
@@ -196,13 +220,13 @@ export default function DashboardPage() {
 
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">
+              <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
                 Personal Banking Overview
               </span>
               <button
                 type="button"
                 onClick={() => setShowWelcomeModal(true)}
-                className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-full text-[11px] font-bold transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 rounded-full text-[11px] font-bold transition-colors cursor-pointer"
                 title="Click to view welcome perks"
               >
                 <Sparkles className="w-3 h-3 text-amber-600" />
@@ -210,10 +234,10 @@ export default function DashboardPage() {
               </button>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
               Welcome back, {profile?.full_name || 'Valued Customer'}
             </h1>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               Registered Mobile: {profile?.phone_masked || '+91 93226 10932'} • Active Account Holder
             </p>
           </div>
@@ -224,7 +248,7 @@ export default function DashboardPage() {
             type="button"
             onClick={handleRefresh}
             disabled={refreshing}
-            className="p-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+            className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             title="Refresh accounts data"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-indigo-600' : ''}`} />
@@ -232,10 +256,10 @@ export default function DashboardPage() {
 
           <Link
             href="/profile"
-            className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs sm:text-sm font-bold transition-all"
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs sm:text-sm font-bold transition-all"
             title="Manage Profile & Settings"
           >
-            <User className="w-4 h-4 text-slate-600" />
+            <User className="w-4 h-4 text-slate-600 dark:text-slate-400" />
             <span>Profile</span>
           </Link>
 
@@ -258,16 +282,16 @@ export default function DashboardPage() {
 
           <Link
             href="/beneficiaries"
-            className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold transition-all"
+            className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-bold transition-all"
           >
-            <Users className="w-4 h-4 text-indigo-600" />
+            <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             <span>Payees</span>
           </Link>
         </div>
       </div>
 
       {/* Total Liquidity & Key Stats Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-8 rounded-3xl shadow-md relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-8 rounded-3xl shadow-md relative overflow-hidden border border-slate-800">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <span className="text-xs font-bold uppercase tracking-widest text-indigo-300">
@@ -310,14 +334,15 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Account Cards Section */}
+      {/* ================= YOUR ACCOUNTS & CARDS SECTION ================= */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-black text-slate-900 tracking-tight">Your Accounts</h2>
-          <span className="text-xs font-bold text-slate-500">{accounts.length} Depository Accounts</span>
+          <h2 className="text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight">Your Accounts & Depository</h2>
+          <span className="text-xs font-bold text-slate-500">{accounts.length} Active Accounts</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Card 1: Primary Account */}
           {accounts.map((account) => {
             const isFrozen = account.status === 'FROZEN';
             const isSavings = account.account_type === 'SAVINGS';
@@ -325,23 +350,23 @@ export default function DashboardPage() {
             return (
               <div
                 key={account.id}
-                className={`bg-white rounded-3xl p-6 border transition-all shadow-2xs hover:shadow-sm ${
+                className={`bg-white dark:bg-[#111827] rounded-3xl p-6 border transition-all shadow-2xs hover:shadow-sm ${
                   isFrozen
-                    ? 'border-rose-200 bg-rose-50/20'
-                    : 'border-slate-200/90 hover:border-indigo-300'
+                    ? 'border-rose-200 dark:border-rose-900 bg-rose-50/20'
+                    : 'border-slate-200/90 dark:border-slate-800 hover:border-indigo-300'
                 }`}
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2.5">
                     <div
                       className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
-                        isSavings ? 'bg-indigo-50 text-indigo-600' : 'bg-blue-50 text-blue-600'
+                        isSavings ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400' : 'bg-blue-50 dark:bg-blue-950/60 text-blue-600'
                       }`}
                     >
                       <CreditCard className="w-5 h-5" />
                     </div>
                     <div>
-                      <span className="text-xs font-extrabold text-slate-900 block leading-tight">
+                      <span className="text-xs font-extrabold text-slate-900 dark:text-slate-100 block leading-tight">
                         {isSavings ? 'Digital High-Yield Savings' : 'Premier Corporate Current'}
                       </span>
                       <span className="text-[11px] font-mono text-slate-400">
@@ -353,8 +378,8 @@ export default function DashboardPage() {
                   <span
                     className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
                       isFrozen
-                        ? 'bg-rose-100 text-rose-800 border border-rose-200'
-                        : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                        ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                        : 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                     }`}
                   >
                     {account.status}
@@ -362,7 +387,7 @@ export default function DashboardPage() {
                 </div>
 
                 {isFrozen && (
-                  <div className="mb-4 p-2.5 bg-rose-50 rounded-xl border border-rose-200 flex items-center gap-2 text-rose-800 text-[11px] font-medium">
+                  <div className="mb-4 p-2.5 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-800 flex items-center gap-2 text-rose-800 dark:text-rose-300 text-[11px] font-medium">
                     <ShieldAlert className="w-4 h-4 shrink-0 text-rose-600" />
                     <span>Transfers restricted by compliance hold</span>
                   </div>
@@ -372,17 +397,17 @@ export default function DashboardPage() {
                   <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
                     Available Balance
                   </span>
-                  <div className="text-2xl font-black text-slate-900 tracking-tight">
+                  <div className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
                     {formatCurrency(account.balance)}
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
                   <button
                     type="button"
                     onClick={() => handleOpenAddMoney(account)}
                     disabled={isFrozen}
-                    className="text-xs font-bold text-emerald-600 hover:text-emerald-800 disabled:opacity-40 inline-flex items-center gap-1 transition-colors cursor-pointer"
+                    className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 disabled:opacity-40 inline-flex items-center gap-1 transition-colors cursor-pointer"
                   >
                     <PlusCircle className="w-3.5 h-3.5" />
                     <span>Add Money</span>
@@ -393,7 +418,7 @@ export default function DashboardPage() {
                     className={`text-xs font-bold transition-colors inline-flex items-center gap-1 ${
                       isFrozen
                         ? 'text-slate-400 cursor-not-allowed pointer-events-none'
-                        : 'text-indigo-600 hover:text-indigo-800'
+                        : 'text-indigo-600 dark:text-indigo-400 hover:text-indigo-800'
                     }`}
                   >
                     <span>Transfer</span>
@@ -402,7 +427,7 @@ export default function DashboardPage() {
 
                   <Link
                     href="/history"
-                    className="text-xs font-bold text-slate-500 hover:text-slate-800"
+                    className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
                   >
                     Statements
                   </Link>
@@ -410,19 +435,114 @@ export default function DashboardPage() {
               </div>
             );
           })}
+
+          {/* Card 2: Fixed Deposit Feature Card */}
+          <div className="bg-white dark:bg-[#111827] rounded-3xl p-6 border border-slate-200/90 dark:border-slate-800 shadow-2xs hover:border-emerald-300 transition-all flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-extrabold text-slate-900 dark:text-slate-100 block leading-tight">
+                      Digital Smart Fixed Deposit
+                    </span>
+                    <span className="text-[11px] text-slate-400">Guaranteed Return Deposit</span>
+                  </div>
+                </div>
+                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                  7.85% P.A.
+                </span>
+              </div>
+
+              <div className="space-y-1 my-4">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                  Projected Maturity Yield
+                </span>
+                <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
+                  ₹1,08,180.00
+                </div>
+                <span className="text-[10px] text-slate-500 block">
+                  Based on ₹1,00,000 for 12 months with quarterly compounding
+                </span>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => handleOpenService('PERSONAL_LOAN')}
+                className="text-xs font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 inline-flex items-center gap-1 cursor-pointer"
+              >
+                <span>Book Instant FD</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </button>
+              <span className="text-[11px] text-slate-400">Zero penalty withdrawal</span>
+            </div>
+          </div>
+
+          {/* Card 3: MIT RuPay Platinum Virtual Card */}
+          <div className="bg-gradient-to-br from-indigo-900 via-indigo-950 to-slate-950 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col justify-between relative overflow-hidden">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-300">
+                  MIT RuPay Platinum Virtual
+                </span>
+                <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/30">
+                  ACTIVE
+                </span>
+              </div>
+
+              <div className="text-sm font-mono tracking-widest font-black my-3 text-slate-100">
+                4532 •••• •••• {(profile?.phone_masked || '9322').slice(-4)}
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] text-slate-300">
+                <span>{profile?.full_name?.toUpperCase() || 'SHUBHAM ALAPURE'}</span>
+                <span>EXP 11/31 • CVV •••</span>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => handleOpenService('FLEX_CREDIT_CARD')}
+                className="text-xs font-bold text-indigo-300 hover:text-white inline-flex items-center gap-1 cursor-pointer"
+              >
+                <span>Manage Limits & Controls</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </button>
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Recent Activity Section */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-2xs">
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+      {/* ================= BILLS, RECHARGES & FINTECH HUB ================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left: Bills & Recharges (7 columns on desktop) */}
+        <div className="lg:col-span-7">
+          <BillsAndRecharges onSelectService={handleOpenService} />
+        </div>
+
+        {/* Right: Credit & Loans + Offers & Rewards (5 columns on desktop) */}
+        <div className="lg:col-span-5 space-y-6">
+          <CreditAndLoans onSelectService={handleOpenService} />
+          <OffersAndRewards onSelectService={handleOpenService} />
+        </div>
+      </div>
+
+      {/* ================= RECENT ACTIVITY SECTION ================= */}
+      <div className="bg-white dark:bg-[#111827] rounded-3xl border border-slate-200/90 dark:border-slate-800 overflow-hidden shadow-2xs">
+        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-black text-slate-900 tracking-tight">Recent Activity</h2>
+            <h2 className="text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight">Recent Activity</h2>
             <p className="text-xs text-slate-500 mt-0.5">Your latest account transfers & deposits</p>
           </div>
           <Link
             href="/history"
-            className="text-xs font-bold text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1"
+            className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 inline-flex items-center gap-1"
           >
             <span>View Full Ledger</span>
             <ExternalLink className="w-3 h-3" />
@@ -431,14 +551,14 @@ export default function DashboardPage() {
 
         {recentTxns.length === 0 ? (
           <div className="p-12 text-center text-xs text-slate-400">
-            <p className="font-semibold text-slate-600">No transactions recorded yet</p>
+            <p className="font-semibold text-slate-600 dark:text-slate-300">No transactions recorded yet</p>
             <p className="mt-1">Add money or initiate your first transfer to see activity here.</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {recentTxns.map((txn: any) => {
               const isDeposit =
-                (txn.remarks && (txn.remarks.includes('Deposit') || txn.remarks.includes('UPI'))) ||
+                (txn.remarks && (txn.remarks.includes('Deposit') || txn.remarks.includes('UPI') || txn.remarks.includes('Top-Up') || txn.remarks.includes('Cashback') || txn.remarks.includes('Loan'))) ||
                 (accounts.some((a) => a.id === txn.from_account_id) &&
                   accounts.some((a) => a.account_number === txn.to_account_number));
               const isOutward = !isDeposit && accounts.some((a) => a.id === txn.from_account_id);
@@ -447,7 +567,7 @@ export default function DashboardPage() {
               const isFailed = txn.status === 'FAILED';
 
               const payeeLabel = isDeposit
-                ? 'UPI Top-Up (Added Money)'
+                ? txn.remarks || 'UPI Deposit'
                 : txn.beneficiary?.beneficiary_name ||
                   txn.beneficiary?.nickname ||
                   `A/C: ${maskAccountNumber(txn.to_account_number)}`;
@@ -455,10 +575,10 @@ export default function DashboardPage() {
               return (
                 <div
                   key={txn.id}
-                  className="p-4 sm:p-5 hover:bg-slate-50/70 transition-colors flex items-center justify-between gap-4"
+                  className="p-4 sm:p-5 hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors flex items-center justify-between gap-4"
                 >
                   <div className="flex items-center gap-3 sm:gap-4">
-                    <div className="relative w-11 h-11 rounded-2xl overflow-hidden shrink-0 border border-slate-200 bg-slate-100 shadow-2xs">
+                    <div className="relative w-11 h-11 rounded-2xl overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shadow-2xs">
                       <Image
                         src={
                           isDeposit
@@ -484,16 +604,16 @@ export default function DashboardPage() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs sm:text-sm font-bold text-slate-900">
+                        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate max-w-[220px] sm:max-w-md">
                           {payeeLabel}
                         </span>
                         <span
                           className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${
                             isSuccess
-                              ? 'bg-emerald-100 text-emerald-800'
+                              ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300'
                               : isPending
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-rose-100 text-rose-800'
+                              ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300'
+                              : 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300'
                           }`}
                         >
                           {txn.status}
@@ -507,10 +627,10 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  <div className="text-right">
+                  <div className="text-right shrink-0">
                     <div
                       className={`text-sm sm:text-base font-black ${
-                        isOutward ? 'text-slate-900' : 'text-emerald-600'
+                        isOutward ? 'text-slate-900 dark:text-slate-100' : 'text-emerald-600 dark:text-emerald-400'
                       }`}
                     >
                       {isOutward ? '-' : '+'}
@@ -529,7 +649,8 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Welcome Bonus Modal Popup */}
+      {/* ================= MODALS ================= */}
+      {/* 1. Welcome Bonus Modal Popup */}
       <WelcomeBonusModal
         isOpen={showWelcomeModal}
         onClose={handleDismissWelcomeModal}
@@ -539,12 +660,23 @@ export default function DashboardPage() {
         bonusAmount={5000}
       />
 
-      {/* Add Money Modal with Cropped QR Popup */}
+      {/* 2. Add Money Modal with Cropped QR Popup */}
       <AddMoneyModal
         isOpen={showAddMoneyModal}
         onClose={() => setShowAddMoneyModal(false)}
         account={selectedAccountForAddMoney}
         onSuccess={handleAddMoneySuccess}
+      />
+
+      {/* 3. Universal Service Action Modal (Recharge, Electricity, FASTag, CIBIL, Loan, Rewards) */}
+      <ServiceModal
+        isOpen={showServiceModal}
+        service={activeService}
+        onClose={() => setShowServiceModal(false)}
+        account={accounts[0] || null}
+        onBalanceUpdated={handleBalanceUpdated}
+        userPhone={profile?.phone_masked || '+91 93226 10932'}
+        userName={profile?.full_name || 'Shubham Alapure'}
       />
     </div>
   );
