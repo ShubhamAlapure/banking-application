@@ -1,10 +1,12 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+@variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
+  --bg-gradient-ambient: rgba(99, 102, 241, 0.07);
+  --bg-dot: rgba(148, 163, 184, 0.28);
   color-scheme: light dark;
 
   &:has(> head > meta[name="color-scheme"][content="dark"]) {
@@ -15,9 +17,13 @@
   }
 }
 
+:root.dark,
+html.dark,
 .dark {
   --background: #0b0f19;
   --foreground: #f8fafc;
+  --bg-gradient-ambient: rgba(99, 102, 241, 0.16);
+  --bg-dot: rgba(255, 255, 255, 0.08);
 }
 
 @theme inline {
@@ -30,8 +36,8 @@
 /* Unique luxury fintech background texture across all pages */
 html,
 body {
-  background-color: #f8fafc !important;
-  color: #0f172a !important;
+  background-color: var(--background);
+  color: var(--foreground);
   min-height: 100%;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -39,8 +45,8 @@ body {
 
   /* Sophisticated micro-matrix dot texture + soft celestial ambient lighting */
   background-image: 
-    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(99, 102, 241, 0.07), transparent 70%),
-    radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.28) 1.2px, transparent 0);
+    radial-gradient(ellipse 90% 60% at 50% -10%, var(--bg-gradient-ambient), transparent 70%),
+    radial-gradient(circle at 1px 1px, var(--bg-dot) 1.2px, transparent 0);
   background-size: 100% 100%, 28px 28px;
   background-attachment: fixed;
   transition: background-color 0.25s ease, color 0.25s ease;

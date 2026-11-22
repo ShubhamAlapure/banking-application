@@ -42,7 +42,7 @@ async function run() {
   await page.waitForSelector('text=Popular Unlimited Plans', { state: 'visible', timeout: 5000 });
   await page.screenshot({ path: path.join(artifactDir, 'service_modal_recharge.png') });
   console.log('✓ Saved service_modal_recharge.png');
-  await page.keyboard.press('Escape');
+  await page.locator('button:has(svg.lucide-x)').first().click();
   await page.waitForTimeout(500);
 
   // 3. Open CIBIL Score Modal
@@ -51,7 +51,7 @@ async function run() {
   await page.waitForSelector('text=EXCELLENT', { state: 'visible', timeout: 5000 });
   await page.screenshot({ path: path.join(artifactDir, 'service_modal_cibil.png') });
   console.log('✓ Saved service_modal_cibil.png');
-  await page.click('button:has-text("Close Report")');
+  await page.locator('button:has-text("Close Report")').first().click();
   await page.waitForTimeout(500);
 
   // 4. Open Rewards Modal
@@ -62,7 +62,7 @@ async function run() {
   await page.waitForTimeout(600);
   await page.screenshot({ path: path.join(artifactDir, 'service_modal_rewards.png') });
   console.log('✓ Saved service_modal_rewards.png');
-  await page.keyboard.press('Escape');
+  await page.locator('button:has(svg.lucide-x)').first().click();
   await page.waitForTimeout(500);
 
   // 5. Switch to Dark Mode to verify styling

@@ -20,6 +20,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Info,
+  ArrowDownLeft,
+  ArrowUpRight,
 } from 'lucide-react';
 
 export default function HistoryPage() {
@@ -27,8 +29,15 @@ export default function HistoryPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // User Accounts & Name Directories
+  const [userAccountIds, setUserAccountIds] = useState<string[]>([]);
+  const [userAccountNumbers, setUserAccountNumbers] = useState<string[]>([]);
+  const [accountDirectory, setAccountDirectory] = useState<Record<string, { name: string; phone: string; userId: string }>>({});
+  const [accountIdDirectory, setAccountIdDirectory] = useState<Record<string, { name: string; accountNumber: string; userId: string }>>({});
+
   // Filters
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [typeFilter, setTypeFilter] = useState<string>('ALL'); // ALL | CREDIT | DEBIT
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
@@ -51,27 +60,42 @@ export default function HistoryPage() {
           return;
         }
 
-        // Fetch user's account IDs & account numbers
-        const { data: accountsData } = await supabase
+        // 1. Fetch user's own accounts
+        const { data: userAccounts } = await supabase
           .from('accounts')
           .select('id, account_number')
           .eq('owner_id', user.id);
 
-        const accountIds = (accountsData || []).map((a: any) => a.id);
-        const accountNumbers = (accountsData || []).map((a: any) => a.account_number);
+        const myAccountIds = (userAccounts || []).map((a: any) => a.id);
+        const myAccountNumbers = (userAccounts || []).map((a: any) => a.account_number);
+        setUserAccountIds(myAccountIds);
+        setUserAccountNumbers(myAccountNumbers);
 
-        if (accountIds.length === 0) {
+        // 2. Fetch full directory from secure API for universal name & partial account resolution
+        try {
+          const dirRes = await fetch('/api/account/directory');
+          const dirData = await dirRes.json();
+          if (dirData.success) {
+            setAccountDirectory(dirData.accountDirectory || {});
+            setAccountIdDirectory(dirData.accountIdDirectory || {});
+          }
+        } catch (dirErr) {
+          console.error('Failed to load account directory:', dirErr);
+        }
+
+        if (myAccountIds.length === 0) {
           setLoading(false);
           return;
         }
 
+        // 3. Fetch all user transactions
         const { data: txnsData, error } = await supabase
           .from('transactions')
           .select(`
             *,
             beneficiary:beneficiaries(nickname, beneficiary_name, bank_name)
           `)
-          .or(`from_account_id.in.(${accountIds.join(',')}),to_account_number.in.(${accountNumbers.join(',')})`)
+          .or(`from_account_id.in.(${myAccountIds.join(',')}),to_account_number.in.(${myAccountNumbers.join(',')})`)
           .order('created_at', { ascending: false });
 
         if (txnsData) {
@@ -90,26 +114,106 @@ export default function HistoryPage() {
     loadTransactions();
   }, [router, supabase]);
 
+  // Helper to determine credit/debit, counterparty name, partial account, and avatar
+  const getTransactionDetails = (txn: any) => {
+    const isDirectDeposit =
+      (txn.remarks &&
+        (txn.remarks.includes('Deposit') ||
+          txn.remarks.includes('UPI') ||
+          txn.remarks.includes('Top-Up') ||
+          txn.remarks.includes('Bonus') ||
+          txn.remarks.includes('Cashback') ||
+          txn.remarks.includes('Loan'))) ||
+      txn.transaction_type === 'CREDIT';
+
+    const isFromUser = userAccountIds.includes(txn.from_account_id);
+    const isToUser = userAccountNumbers.includes(txn.to_account_number);
+
+    let isCredit = false;
+    if (isDirectDeposit && isToUser) {
+      isCredit = true;
+    } else if (!isFromUser && isToUser) {
+      isCredit = true;
+    } else if (isFromUser && !isToUser) {
+      isCredit = false;
+    } else if (isFromUser && isToUser) {
+      isCredit = isDirectDeposit;
+    }
+
+    let counterpartyName = '';
+    let partialAccount = '';
+    let avatarUserId: string | undefined = undefined;
+
+    if (isCredit) {
+      // Money came IN (CREDIT)
+      if (isDirectDeposit) {
+        counterpartyName = txn.remarks
+          ? txn.remarks.split('(')[0].trim()
+          : 'UPI Instant Top-Up';
+        partialAccount = `A/C: ${maskAccountNumber(txn.to_account_number)}`;
+      } else if (accountIdDirectory[txn.from_account_id]) {
+        const sender = accountIdDirectory[txn.from_account_id];
+        counterpartyName = sender.name;
+        partialAccount = `A/C: ${maskAccountNumber(sender.accountNumber)}`;
+        avatarUserId = sender.userId;
+      } else {
+        counterpartyName = 'Inward Wire Transfer';
+        partialAccount = `A/C: ${maskAccountNumber(txn.to_account_number)}`;
+      }
+    } else {
+      // Money went OUT (DEBIT)
+      if (txn.beneficiary?.beneficiary_name) {
+        counterpartyName = txn.beneficiary.beneficiary_name;
+        partialAccount = `A/C: ${maskAccountNumber(txn.to_account_number)}`;
+      } else if (accountDirectory[txn.to_account_number]) {
+        const recipient = accountDirectory[txn.to_account_number];
+        counterpartyName = recipient.name;
+        partialAccount = `A/C: ${maskAccountNumber(txn.to_account_number)}`;
+        avatarUserId = recipient.userId;
+      } else if (txn.to_account_number === 'MITP_BILLPAY_CORP') {
+        counterpartyName = txn.remarks ? txn.remarks.split(':')[0] : 'Utility BillPay';
+        partialAccount = 'Biller Corp (MITP)';
+      } else {
+        counterpartyName = `Account Holder`;
+        partialAccount = `A/C: ${maskAccountNumber(txn.to_account_number)}`;
+      }
+    }
+
+    return {
+      isCredit,
+      counterpartyName,
+      partialAccount,
+      avatarUserId,
+    };
+  };
+
   // Apply Client-Side Filters
   const filtered = transactions.filter((txn) => {
+    const details = getTransactionDetails(txn);
+
     // 1. Status Filter
     if (statusFilter !== 'ALL' && txn.status !== statusFilter) {
       return false;
     }
 
-    // 2. Search Query (reference number, remarks, to_account_number, beneficiary name)
+    // 2. Type Filter (CREDIT / DEBIT)
+    if (typeFilter === 'CREDIT' && !details.isCredit) return false;
+    if (typeFilter === 'DEBIT' && details.isCredit) return false;
+
+    // 3. Search Query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       const refMatch = txn.reference_no.toLowerCase().includes(q);
       const remarkMatch = (txn.remarks || '').toLowerCase().includes(q);
       const toAccMatch = txn.to_account_number.includes(q);
-      const benMatch = (txn.beneficiary?.beneficiary_name || '').toLowerCase().includes(q);
-      if (!refMatch && !remarkMatch && !toAccMatch && !benMatch) {
+      const nameMatch = details.counterpartyName.toLowerCase().includes(q);
+      const partialMatch = details.partialAccount.toLowerCase().includes(q);
+      if (!refMatch && !remarkMatch && !toAccMatch && !nameMatch && !partialMatch) {
         return false;
       }
     }
 
-    // 3. Date Range
+    // 4. Date Range
     if (startDate) {
       const start = new Date(startDate);
       const txnDate = new Date(txn.created_at);
@@ -139,50 +243,53 @@ export default function HistoryPage() {
     const headers = [
       'Reference Number',
       'Date & Time',
-      'From Account ID',
-      'To Account',
-      'Beneficiary',
+      'Type',
+      'Account Holder / Payee',
+      'Partial Account',
       'Amount (INR)',
       'Remarks',
       'Status',
       'Failure Reason',
     ];
 
-    const rows = filtered.map((t) => [
-      t.reference_no,
-      `"${new Date(t.created_at).toISOString()}"`,
-      t.from_account_id,
-      t.to_account_number,
-      `"${t.beneficiary?.beneficiary_name || 'N/A'}"`,
-      t.amount.toFixed(2),
-      `"${(t.remarks || '').replace(/"/g, '""')}"`,
-      t.status,
-      `"${(t.failure_reason || '').replace(/"/g, '""')}"`,
-    ]);
+    const rows = filtered.map((txn) => {
+      const d = getTransactionDetails(txn);
+      return [
+        `"${txn.reference_no}"`,
+        `"${formatDate(txn.created_at)}"`,
+        `"${d.isCredit ? 'CREDIT' : 'DEBIT'}"`,
+        `"${d.counterpartyName.replace(/"/g, '""')}"`,
+        `"${d.partialAccount}"`,
+        d.isCredit ? `+${txn.amount}` : `-${txn.amount}`,
+        `"${(txn.remarks || '').replace(/"/g, '""')}"`,
+        `"${txn.status}"`,
+        `"${(txn.failure_reason || '').replace(/"/g, '""')}"`,
+      ];
+    });
 
-    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const csvContent = [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `statement_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `MIT_Statement_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      {/* Header & Export CTA */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">
+          <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider block">
             Financial Ledger
           </span>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
             Transaction History & Status
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Audit trail of all incoming and outgoing payments with detailed failure reasons
           </p>
         </div>
@@ -190,22 +297,20 @@ export default function HistoryPage() {
         <button
           type="button"
           onClick={handleExportCSV}
-          disabled={filtered.length === 0}
-          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all disabled:opacity-40"
+          disabled={loading || filtered.length === 0}
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer self-start sm:self-auto"
         >
           <Download className="w-4 h-4" />
           <span>Export CSV Statement</span>
         </button>
       </div>
 
-      {/* Filters Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {/* Search */}
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-              <Search className="w-4 h-4" />
-            </div>
+      {/* Filter and Search Bar */}
+      <div className="bg-white dark:bg-[#111827] rounded-2xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          {/* Search Input */}
+          <div className="relative sm:col-span-2">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
@@ -213,9 +318,25 @@ export default function HistoryPage() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              placeholder="Search reference, account, remark..."
-              className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Search reference, account holder, account no..."
+              className="w-full pl-10 pr-4 py-2.5 text-xs font-medium bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-slate-100"
             />
+          </div>
+
+          {/* Type Filter */}
+          <div>
+            <select
+              value={typeFilter}
+              onChange={(e) => {
+                setTypeFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full px-3 py-2.5 text-xs font-bold bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200"
+            >
+              <option value="ALL">All Types (Credit & Debit)</option>
+              <option value="CREDIT">Credits Only (Money In)</option>
+              <option value="DEBIT">Debits Only (Money Out)</option>
+            </select>
           </div>
 
           {/* Status Filter */}
@@ -226,7 +347,7 @@ export default function HistoryPage() {
                 setStatusFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-3 py-2 text-xs font-medium bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2.5 text-xs font-bold bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200"
             >
               <option value="ALL">All Statuses</option>
               <option value="SUCCESS">SUCCESS only</option>
@@ -237,7 +358,7 @@ export default function HistoryPage() {
           </div>
 
           {/* Start Date */}
-          <div className="relative">
+          <div>
             <input
               type="date"
               value={startDate}
@@ -245,28 +366,14 @@ export default function HistoryPage() {
                 setStartDate(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-3 py-2 text-xs font-medium bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2.5 text-xs font-medium bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200"
               title="Start Date"
-            />
-          </div>
-
-          {/* End Date */}
-          <div className="relative">
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => {
-                setEndDate(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="w-full px-3 py-2 text-xs font-medium bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              title="End Date"
             />
           </div>
         </div>
 
-        {(searchQuery || statusFilter !== 'ALL' || startDate || endDate) && (
-          <div className="pt-2 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100">
+        {(searchQuery || statusFilter !== 'ALL' || typeFilter !== 'ALL' || startDate || endDate) && (
+          <div className="pt-2 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800">
             <span>
               Showing {filtered.length} matching transaction{filtered.length === 1 ? '' : 's'}
             </span>
@@ -275,11 +382,12 @@ export default function HistoryPage() {
               onClick={() => {
                 setSearchQuery('');
                 setStatusFilter('ALL');
+                setTypeFilter('ALL');
                 setStartDate('');
                 setEndDate('');
                 setCurrentPage(1);
               }}
-              className="text-indigo-600 hover:underline font-semibold"
+              className="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold cursor-pointer"
             >
               Reset Filters
             </button>
@@ -288,17 +396,17 @@ export default function HistoryPage() {
       </div>
 
       {/* Transactions Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+      <div className="bg-white dark:bg-[#111827] rounded-3xl border border-slate-200/90 dark:border-slate-800 overflow-hidden shadow-2xs">
         {loading ? (
           <div className="p-8 space-y-4 animate-pulse">
-            <div className="h-8 bg-slate-100 rounded-lg w-full" />
-            <div className="h-8 bg-slate-100 rounded-lg w-full" />
-            <div className="h-8 bg-slate-100 rounded-lg w-full" />
+            <div className="h-8 bg-slate-100 dark:bg-slate-800 rounded-lg w-full" />
+            <div className="h-8 bg-slate-100 dark:bg-slate-800 rounded-lg w-full" />
+            <div className="h-8 bg-slate-100 dark:bg-slate-800 rounded-lg w-full" />
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-16 text-center text-slate-400">
             <History className="w-10 h-10 mx-auto mb-3 opacity-30" />
-            <h3 className="text-base font-bold text-slate-700">No transactions recorded</h3>
+            <h3 className="text-base font-bold text-slate-700 dark:text-slate-300">No transactions recorded</h3>
             <p className="text-xs text-slate-500 mt-1">
               No transactions match your current search and filter parameters.
             </p>
@@ -307,74 +415,118 @@ export default function HistoryPage() {
           <>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50/90 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200">
+                <thead className="bg-slate-50/90 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-200 dark:border-slate-800">
                   <tr>
-                    <th className="py-3 px-4">Date & Time</th>
-                    <th className="py-3 px-4">Reference No</th>
-                    <th className="py-3 px-4">To / Payee</th>
-                    <th className="py-3 px-4">Amount</th>
-                    <th className="py-3 px-4">Remarks</th>
-                    <th className="py-3 px-4">Status & Reason</th>
+                    <th className="py-3.5 px-4">Date & Time</th>
+                    <th className="py-3.5 px-4">Reference No</th>
+                    <th className="py-3.5 px-4">Account Holder / Payee</th>
+                    <th className="py-3.5 px-4">Type</th>
+                    <th className="py-3.5 px-4">Amount</th>
+                    <th className="py-3.5 px-4">Remarks</th>
+                    <th className="py-3.5 px-4">Status & Reason</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {paginatedTransactions.map((txn) => {
                     const isSuccess = txn.status === 'SUCCESS';
                     const isFailed = txn.status === 'FAILED';
                     const isPending = txn.status === 'PENDING_OTP';
                     const isCancelled = txn.status === 'CANCELLED';
-                    const isDeposit = (txn.remarks && (txn.remarks.includes('Deposit') || txn.remarks.includes('UPI')));
+
+                    const details = getTransactionDetails(txn);
 
                     return (
-                      <tr key={txn.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-3.5 px-4 font-mono text-slate-500 whitespace-nowrap">
+                      <tr key={txn.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/50 transition-colors">
+                        {/* 1. Date & Time */}
+                        <td className="py-3.5 px-4 font-mono text-slate-500 dark:text-slate-400 whitespace-nowrap">
                           {formatDate(txn.created_at)}
                         </td>
-                        <td className="py-3.5 px-4 font-mono font-medium text-slate-800">
+
+                        {/* 2. Reference No */}
+                        <td className="py-3.5 px-4 font-mono font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
                           {txn.reference_no}
                         </td>
+
+                        {/* 3. Account Holder Name & Partial Account No */}
                         <td className="py-3.5 px-4">
                           <div className="flex items-center gap-2.5">
-                            <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0 border border-slate-200 bg-slate-100 shadow-2xs">
+                            <div className="relative w-9 h-9 rounded-full overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shadow-2xs">
                               <Image
                                 src={resolveAvatarUrl(
                                   null,
-                                  isDeposit ? 'UPI' : txn.beneficiary?.beneficiary_name || 'Customer'
+                                  details.counterpartyName,
+                                  details.avatarUserId
                                 )}
-                                alt="Avatar"
+                                alt={details.counterpartyName}
                                 fill
                                 className="object-cover"
                                 unoptimized
                               />
+                              <div
+                                className={`absolute bottom-0 right-0 p-0.5 rounded-full ${
+                                  details.isCredit ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'
+                                }`}
+                              >
+                                {details.isCredit ? (
+                                  <ArrowDownLeft className="w-2.5 h-2.5" />
+                                ) : (
+                                  <ArrowUpRight className="w-2.5 h-2.5" />
+                                )}
+                              </div>
                             </div>
                             <div>
-                              <div className="font-semibold text-slate-800">
-                                {isDeposit
-                                  ? 'UPI Instant Top-Up'
-                                  : txn.beneficiary?.beneficiary_name || maskAccountNumber(txn.to_account_number)}
+                              <div className="font-bold text-slate-900 dark:text-slate-100 leading-tight">
+                                {details.counterpartyName}
                               </div>
-                              <div className="text-[11px] font-mono text-slate-400">
-                                {maskAccountNumber(txn.to_account_number)}
+                              <div className="text-[11px] font-mono text-slate-400 dark:text-slate-500 mt-0.5">
+                                {details.partialAccount}
                               </div>
                             </div>
                           </div>
                         </td>
-                        <td className={`py-3.5 px-4 font-bold text-sm whitespace-nowrap ${isDeposit ? 'text-emerald-600' : 'text-slate-900'}`}>
-                          {isDeposit ? '+' : ''}{formatCurrency(txn.amount)}
+
+                        {/* 4. Type Badge (CREDIT / DEBIT) */}
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                              details.isCredit
+                                ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                : 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                            }`}
+                          >
+                            {details.isCredit ? 'CREDIT' : 'DEBIT'}
+                          </span>
                         </td>
-                        <td className="py-3.5 px-4 text-slate-600 max-w-[200px] truncate">
+
+                        {/* 5. Amount (Green for Credited, Red for Debited) */}
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <span
+                            className={`font-black text-sm ${
+                              details.isCredit
+                                ? 'text-emerald-600 dark:text-emerald-400'
+                                : 'text-rose-600 dark:text-rose-400'
+                            }`}
+                          >
+                            {details.isCredit ? '+' : '-'}{formatCurrency(txn.amount)}
+                          </span>
+                        </td>
+
+                        {/* 6. Remarks */}
+                        <td className="py-3.5 px-4 text-slate-600 dark:text-slate-400 max-w-[200px] truncate">
                           {txn.remarks || '-'}
                         </td>
-                        <td className="py-3.5 px-4">
+
+                        {/* 7. Status & Failure Reason */}
+                        <td className="py-3.5 px-4 whitespace-nowrap">
                           <div className="flex flex-col items-start gap-1">
                             <span
                               className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                                 isSuccess
-                                  ? 'bg-emerald-100 text-emerald-800'
+                                  ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300'
                                   : isFailed
-                                  ? 'bg-rose-100 text-rose-800'
+                                  ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300'
                                   : isPending
-                                  ? 'bg-amber-100 text-amber-800'
+                                  ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300'
                                   : 'bg-slate-100 text-slate-700'
                               }`}
                             >
@@ -387,7 +539,7 @@ export default function HistoryPage() {
 
                             {isFailed && txn.failure_reason && (
                               <div
-                                className="text-[11px] text-rose-700 font-medium bg-rose-50 px-2 py-0.5 rounded border border-rose-100 max-w-xs break-words"
+                                className="text-[11px] text-rose-700 dark:text-rose-300 font-medium bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded border border-rose-100 dark:border-rose-900/60 max-w-xs break-words"
                                 title={txn.failure_reason}
                               >
                                 {txn.failure_reason}
@@ -404,7 +556,7 @@ export default function HistoryPage() {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="p-4 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+              <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                 <span>
                   Page {currentPage} of {totalPages}
                 </span>
@@ -413,7 +565,7 @@ export default function HistoryPage() {
                     type="button"
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-40 transition-colors"
+                    className="p-1.5 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 transition-colors cursor-pointer"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
@@ -421,7 +573,7 @@ export default function HistoryPage() {
                     type="button"
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
-                    className="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-40 transition-colors"
+                    className="p-1.5 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 transition-colors cursor-pointer"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>

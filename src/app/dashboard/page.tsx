@@ -43,6 +43,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [accountDirectory, setAccountDirectory] = useState<Record<string, { name: string; phone: string; userId: string }>>({});
+  const [accountIdDirectory, setAccountIdDirectory] = useState<Record<string, { name: string; accountNumber: string; userId: string }>>({});
 
   // Modal States
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -109,6 +111,18 @@ export default function DashboardPage() {
 
       if (accountsData) {
         setAccounts(accountsData as Account[]);
+      }
+
+      // Fetch full directory from secure API for universal counterparty name & partial account resolution
+      try {
+        const dirRes = await fetch('/api/account/directory');
+        const dirData = await dirRes.json();
+        if (dirData.success) {
+          setAccountDirectory(dirData.accountDirectory || {});
+          setAccountIdDirectory(dirData.accountIdDirectory || {});
+        }
+      } catch (dirErr) {
+        console.error('Failed to load account directory:', dirErr);
       }
 
       // 3. Fetch recent 5 transactions
@@ -557,20 +571,68 @@ export default function DashboardPage() {
         ) : (
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {recentTxns.map((txn: any) => {
-              const isDeposit =
-                (txn.remarks && (txn.remarks.includes('Deposit') || txn.remarks.includes('UPI') || txn.remarks.includes('Top-Up') || txn.remarks.includes('Cashback') || txn.remarks.includes('Loan'))) ||
-                (accounts.some((a) => a.id === txn.from_account_id) &&
-                  accounts.some((a) => a.account_number === txn.to_account_number));
-              const isOutward = !isDeposit && accounts.some((a) => a.id === txn.from_account_id);
+              const isDirectDeposit =
+                (txn.remarks &&
+                  (txn.remarks.includes('Deposit') ||
+                    txn.remarks.includes('UPI') ||
+                    txn.remarks.includes('Top-Up') ||
+                    txn.remarks.includes('Bonus') ||
+                    txn.remarks.includes('Cashback') ||
+                    txn.remarks.includes('Loan'))) ||
+                txn.transaction_type === 'CREDIT';
+
+              const isFromUser = accounts.some((a) => a.id === txn.from_account_id);
+              const isToUser = accounts.some((a) => a.account_number === txn.to_account_number);
+
+              let isCredit = false;
+              if (isDirectDeposit && isToUser) {
+                isCredit = true;
+              } else if (!isFromUser && isToUser) {
+                isCredit = true;
+              } else if (isFromUser && !isToUser) {
+                isCredit = false;
+              } else if (isFromUser && isToUser) {
+                isCredit = isDirectDeposit;
+              }
+
+              let counterpartyName = '';
+              let partialAccount = '';
+              let avatarUserId: string | undefined = undefined;
+
+              if (isCredit) {
+                if (isDirectDeposit) {
+                  counterpartyName = txn.remarks ? txn.remarks.split('(')[0].trim() : 'UPI Instant Top-Up';
+                  partialAccount = `A/C: ${maskAccountNumber(txn.to_account_number)}`;
+                } else if (accountIdDirectory[txn.from_account_id]) {
+                  const sender = accountIdDirectory[txn.from_account_id];
+                  counterpartyName = sender.name;
+                  partialAccount = `A/C: ${maskAccountNumber(sender.accountNumber)}`;
+                  avatarUserId = sender.userId;
+                } else {
+                  counterpartyName = 'Inward Wire Transfer';
+                  partialAccount = `A/C: ${maskAccountNumber(txn.to_account_number)}`;
+                }
+              } else {
+                if (txn.beneficiary?.beneficiary_name) {
+                  counterpartyName = txn.beneficiary.beneficiary_name;
+                  partialAccount = `A/C: ${maskAccountNumber(txn.to_account_number)}`;
+                } else if (accountDirectory[txn.to_account_number]) {
+                  const recipient = accountDirectory[txn.to_account_number];
+                  counterpartyName = recipient.name;
+                  partialAccount = `A/C: ${maskAccountNumber(txn.to_account_number)}`;
+                  avatarUserId = recipient.userId;
+                } else if (txn.to_account_number === 'MITP_BILLPAY_CORP') {
+                  counterpartyName = txn.remarks ? txn.remarks.split(':')[0] : 'Utility BillPay';
+                  partialAccount = 'Biller Corp (MITP)';
+                } else {
+                  counterpartyName = 'Account Holder';
+                  partialAccount = `A/C: ${maskAccountNumber(txn.to_account_number)}`;
+                }
+              }
+
               const isSuccess = txn.status === 'SUCCESS';
               const isPending = txn.status === 'PENDING_OTP';
               const isFailed = txn.status === 'FAILED';
-
-              const payeeLabel = isDeposit
-                ? txn.remarks || 'UPI Deposit'
-                : txn.beneficiary?.beneficiary_name ||
-                  txn.beneficiary?.nickname ||
-                  `A/C: ${maskAccountNumber(txn.to_account_number)}`;
 
               return (
                 <div
@@ -580,37 +642,42 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-3 sm:gap-4">
                     <div className="relative w-11 h-11 rounded-2xl overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shadow-2xs">
                       <Image
-                        src={
-                          isDeposit
-                            ? resolveAvatarUrl(profile?.avatar_url, profile?.full_name, currentUserId)
-                            : resolveAvatarUrl(null, payeeLabel)
-                        }
-                        alt={payeeLabel}
+                        src={resolveAvatarUrl(null, counterpartyName, avatarUserId)}
+                        alt={counterpartyName}
                         fill
                         className="object-cover"
                         unoptimized
                       />
                       <div
                         className={`absolute bottom-0 right-0 p-0.5 rounded-full ${
-                          isOutward ? 'bg-amber-500 text-white' : 'bg-emerald-500 text-white'
+                          isCredit ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'
                         }`}
                       >
-                        {isOutward ? (
-                          <ArrowUpRight className="w-2.5 h-2.5" />
-                        ) : (
+                        {isCredit ? (
                           <ArrowDownLeft className="w-2.5 h-2.5" />
+                        ) : (
+                          <ArrowUpRight className="w-2.5 h-2.5" />
                         )}
                       </div>
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate max-w-[220px] sm:max-w-md">
-                          {payeeLabel}
+                          {counterpartyName}
+                        </span>
+                        <span
+                          className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                            isCredit
+                              ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300'
+                              : 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300'
+                          }`}
+                        >
+                          {isCredit ? 'CREDIT' : 'DEBIT'}
                         </span>
                         <span
                           className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${
                             isSuccess
-                              ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300'
+                              ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                               : isPending
                               ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300'
                               : 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300'
@@ -620,6 +687,10 @@ export default function DashboardPage() {
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
+                        <span className="font-mono font-medium text-slate-500 dark:text-slate-400">
+                          {partialAccount}
+                        </span>
+                        <span>•</span>
                         <span className="font-mono">{txn.reference_no}</span>
                         <span>•</span>
                         <span>{formatDate(txn.created_at)}</span>
@@ -630,10 +701,12 @@ export default function DashboardPage() {
                   <div className="text-right shrink-0">
                     <div
                       className={`text-sm sm:text-base font-black ${
-                        isOutward ? 'text-slate-900 dark:text-slate-100' : 'text-emerald-600 dark:text-emerald-400'
+                        isCredit
+                          ? 'text-emerald-600 dark:text-emerald-400'
+                          : 'text-rose-600 dark:text-rose-400'
                       }`}
                     >
-                      {isOutward ? '-' : '+'}
+                      {isCredit ? '+' : '-'}
                       {formatCurrency(txn.amount)}
                     </div>
                     {txn.failure_reason && (
