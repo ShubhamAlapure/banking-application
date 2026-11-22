@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Account, Transaction, Profile, AuditLog } from '@/types/database';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { resolveAvatarUrl } from '@/lib/avatar';
 import { useDemo } from '@/context/DemoContext';
 import {
   ShieldCheck,
@@ -836,12 +838,14 @@ export default function AdminPage() {
                           {/* Account Holder */}
                           <td className="py-3.5 px-4">
                             <div className="flex items-center gap-3">
-                              <div
-                                className={`w-9 h-9 rounded-xl bg-gradient-to-br ${getAvatarGradient(
-                                  holderName
-                                )} flex items-center justify-center font-bold text-xs shadow-xs shrink-0`}
-                              >
-                                {getInitials(holderName)}
+                              <div className="relative w-9 h-9 rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-2xs shrink-0">
+                                <Image
+                                  src={resolveAvatarUrl(acc.owner?.avatar_url, holderName, acc.owner?.id)}
+                                  alt={holderName}
+                                  fill
+                                  className="object-cover"
+                                  unoptimized
+                                />
                               </div>
                               <div>
                                 <div className="font-bold text-slate-900 text-sm">{holderName}</div>

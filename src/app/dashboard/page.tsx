@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Account, Transaction, Profile } from '@/types/database';
 import { formatCurrency, maskAccountNumber, formatDate } from '@/lib/utils';
+import { resolveAvatarUrl } from '@/lib/avatar';
 import {
   Wallet,
   ArrowUpRight,
@@ -21,6 +23,7 @@ import {
   TrendingUp,
   Sparkles,
   Gift,
+  User,
 } from 'lucide-react';
 import WelcomeBonusModal from '@/components/WelcomeBonusModal';
 import AddMoneyModal from '@/components/AddMoneyModal';
@@ -61,6 +64,8 @@ export default function DashboardPage() {
       }
 
       // 1. Fetch user profile
+      const meta = (user.user_metadata || {}) as any;
+      const metaAvatar = meta.avatar_url || null;
       const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
@@ -68,7 +73,20 @@ export default function DashboardPage() {
         .single();
 
       if (profileData) {
-        setProfile(profileData as Profile);
+        setProfile({
+          ...(profileData as Profile),
+          avatar_url: metaAvatar || (profileData as any).avatar_url,
+        });
+      } else {
+        setProfile({
+          id: user.id,
+          full_name: meta.full_name || 'Valued Customer',
+          role: meta.role || 'customer',
+          phone_masked: meta.phone || '+91 93226 10932',
+          avatar_url: metaAvatar,
+          created_at: '',
+          updated_at: '',
+        });
       }
 
       // 2. Fetch customer accounts
@@ -161,28 +179,44 @@ export default function DashboardPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Welcome Banner & Quick Action Buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/90 shadow-2xs">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">
-              Personal Banking Overview
-            </span>
-            <button
-              type="button"
-              onClick={() => setShowWelcomeModal(true)}
-              className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-full text-[11px] font-bold transition-colors cursor-pointer"
-              title="Click to view welcome perks"
-            >
-              <Sparkles className="w-3 h-3 text-amber-600" />
-              <span>₹5,000 Welcome Benefit Active</span>
-            </button>
-          </div>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/profile"
+            className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-slate-200 hover:border-indigo-500 shadow-md transition-all shrink-0 bg-slate-100 group cursor-pointer"
+            title="Click to Manage Profile & Avatar"
+          >
+            <Image
+              src={resolveAvatarUrl(profile?.avatar_url, profile?.full_name, currentUserId)}
+              alt={profile?.full_name || 'Profile'}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform"
+              unoptimized
+            />
+          </Link>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            Welcome back, {profile?.full_name || 'Valued Customer'}
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Registered Mobile: {profile?.phone_masked || '+91 98*** **123'} • Active Account Holder
-          </p>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">
+                Personal Banking Overview
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowWelcomeModal(true)}
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-full text-[11px] font-bold transition-colors cursor-pointer"
+                title="Click to view welcome perks"
+              >
+                <Sparkles className="w-3 h-3 text-amber-600" />
+                <span>₹5,000 Welcome Benefit Active</span>
+              </button>
+            </div>
+
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              Welcome back, {profile?.full_name || 'Valued Customer'}
+            </h1>
+            <p className="text-xs text-slate-500 mt-1">
+              Registered Mobile: {profile?.phone_masked || '+91 93226 10932'} • Active Account Holder
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center flex-wrap gap-2.5">
@@ -195,6 +229,15 @@ export default function DashboardPage() {
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-indigo-600' : ''}`} />
           </button>
+
+          <Link
+            href="/profile"
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs sm:text-sm font-bold transition-all"
+            title="Manage Profile & Settings"
+          >
+            <User className="w-4 h-4 text-slate-600" />
+            <span>Profile</span>
+          </Link>
 
           <button
             type="button"
@@ -415,16 +458,29 @@ export default function DashboardPage() {
                   className="p-4 sm:p-5 hover:bg-slate-50/70 transition-colors flex items-center justify-between gap-4"
                 >
                   <div className="flex items-center gap-3 sm:gap-4">
-                    <div
-                      className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
-                        isOutward ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'
-                      }`}
-                    >
-                      {isOutward ? (
-                        <ArrowUpRight className="w-5 h-5" />
-                      ) : (
-                        <ArrowDownLeft className="w-5 h-5" />
-                      )}
+                    <div className="relative w-11 h-11 rounded-2xl overflow-hidden shrink-0 border border-slate-200 bg-slate-100 shadow-2xs">
+                      <Image
+                        src={
+                          isDeposit
+                            ? resolveAvatarUrl(profile?.avatar_url, profile?.full_name, currentUserId)
+                            : resolveAvatarUrl(null, payeeLabel)
+                        }
+                        alt={payeeLabel}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                      <div
+                        className={`absolute bottom-0 right-0 p-0.5 rounded-full ${
+                          isOutward ? 'bg-amber-500 text-white' : 'bg-emerald-500 text-white'
+                        }`}
+                      >
+                        {isOutward ? (
+                          <ArrowUpRight className="w-2.5 h-2.5" />
+                        ) : (
+                          <ArrowDownLeft className="w-2.5 h-2.5" />
+                        )}
+                      </div>
                     </div>
                     <div>
                       <div className="flex items-center gap-2">

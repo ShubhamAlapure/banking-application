@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Account, Beneficiary } from '@/types/database';
 import { transferInitiateSchema, otpVerifySchema } from '@/lib/validations';
 import { formatCurrency, maskAccountNumber, generateIdempotencyKey } from '@/lib/utils';
+import { resolveAvatarUrl } from '@/lib/avatar';
 import { useDemo } from '@/context/DemoContext';
 import confetti from 'canvas-confetti';
 import {
@@ -649,9 +651,20 @@ function TransferContent() {
 
             <div className="flex items-center justify-between">
               <span className="text-slate-500">Beneficiary Name</span>
-              <span className="font-semibold text-slate-800">
-                {selectedBeneficiary?.beneficiary_name} ({selectedBeneficiary?.nickname})
-              </span>
+              <div className="flex items-center gap-2">
+                <div className="relative w-6 h-6 rounded-full overflow-hidden border border-slate-200 shrink-0">
+                  <Image
+                    src={resolveAvatarUrl(null, selectedBeneficiary?.beneficiary_name)}
+                    alt={selectedBeneficiary?.beneficiary_name || 'Payee'}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+                <span className="font-semibold text-slate-800">
+                  {selectedBeneficiary?.beneficiary_name} ({selectedBeneficiary?.nickname})
+                </span>
+              </div>
             </div>
 
             <div className="flex items-center justify-between">

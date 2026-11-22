@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Beneficiary, Account } from '@/types/database';
 import { beneficiarySchema } from '@/lib/validations';
 import { maskAccountNumber } from '@/lib/utils';
+import { resolveAvatarUrl } from '@/lib/avatar';
 import { useDemo } from '@/context/DemoContext';
 import {
   Users,
@@ -386,8 +388,14 @@ export default function BeneficiariesPage() {
               <div>
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 font-bold flex items-center justify-center text-sm">
-                      {b.beneficiary_name.charAt(0).toUpperCase()}
+                    <div className="relative w-11 h-11 rounded-2xl overflow-hidden shrink-0 border border-slate-200 bg-slate-100 shadow-2xs">
+                      <Image
+                        src={resolveAvatarUrl(null, b.beneficiary_name)}
+                        alt={b.beneficiary_name}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-slate-900 leading-tight">

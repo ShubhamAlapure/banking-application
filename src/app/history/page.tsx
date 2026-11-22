@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Transaction, Account } from '@/types/database';
 import { formatCurrency, maskAccountNumber, formatDate } from '@/lib/utils';
+import { resolveAvatarUrl } from '@/lib/avatar';
 import {
   History,
   Search,
@@ -332,13 +334,29 @@ export default function HistoryPage() {
                           {txn.reference_no}
                         </td>
                         <td className="py-3.5 px-4">
-                          <div className="font-semibold text-slate-800">
-                            {isDeposit
-                              ? 'UPI Instant Top-Up'
-                              : txn.beneficiary?.beneficiary_name || maskAccountNumber(txn.to_account_number)}
-                          </div>
-                          <div className="text-[11px] font-mono text-slate-400">
-                            {maskAccountNumber(txn.to_account_number)}
+                          <div className="flex items-center gap-2.5">
+                            <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0 border border-slate-200 bg-slate-100 shadow-2xs">
+                              <Image
+                                src={resolveAvatarUrl(
+                                  null,
+                                  isDeposit ? 'UPI' : txn.beneficiary?.beneficiary_name || 'Customer'
+                                )}
+                                alt="Avatar"
+                                fill
+                                className="object-cover"
+                                unoptimized
+                              />
+                            </div>
+                            <div>
+                              <div className="font-semibold text-slate-800">
+                                {isDeposit
+                                  ? 'UPI Instant Top-Up'
+                                  : txn.beneficiary?.beneficiary_name || maskAccountNumber(txn.to_account_number)}
+                              </div>
+                              <div className="text-[11px] font-mono text-slate-400">
+                                {maskAccountNumber(txn.to_account_number)}
+                              </div>
+                            </div>
                           </div>
                         </td>
                         <td className={`py-3.5 px-4 font-bold text-sm whitespace-nowrap ${isDeposit ? 'text-emerald-600' : 'text-slate-900'}`}>

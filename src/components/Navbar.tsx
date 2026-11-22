@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { resolveAvatarUrl } from '@/lib/avatar';
 import {
   Building2,
   LayoutDashboard,
@@ -39,6 +41,8 @@ export function Navbar() {
         } = await supabase.auth.getUser();
 
         if (user) {
+          const meta = (user.user_metadata || {}) as any;
+          const metaAvatar = meta.avatar_url || null;
           const { data } = await supabase
             .from('profiles')
             .select('*')
@@ -46,13 +50,17 @@ export function Navbar() {
             .single();
 
           if (data) {
-            setProfile(data as Profile);
+            setProfile({
+              ...(data as Profile),
+              avatar_url: metaAvatar || (data as any).avatar_url,
+            });
           } else {
             setProfile({
               id: user.id,
-              full_name: user.user_metadata?.full_name || 'Valued Customer',
-              role: user.user_metadata?.role || 'customer',
-              phone_masked: '+91 98*** **123',
+              full_name: meta.full_name || 'Valued Customer',
+              role: meta.role || 'customer',
+              phone_masked: meta.phone || '+91 93226 10932',
+              avatar_url: metaAvatar,
               created_at: '',
               updated_at: '',
             });
@@ -208,29 +216,45 @@ export function Navbar() {
               <div className="w-24 h-9 bg-slate-100 rounded-xl animate-pulse" />
             ) : profile ? (
               <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
-                <div className="text-right">
-                  <div className="flex items-center gap-1.5 justify-end">
-                    <span className="text-xs font-bold text-slate-900 leading-tight">
-                      {profile.full_name}
-                    </span>
-                    <span
-                      className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                        isAdmin
-                          ? 'bg-purple-100 text-purple-800 border border-purple-200'
-                          : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                      }`}
-                    >
-                      {isAdmin ? 'Operations Staff' : 'Verified Customer'}
-                    </span>
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-2.5 hover:opacity-90 transition-opacity group text-right"
+                  title="Manage Account & Profile Settings"
+                >
+                  <div>
+                    <div className="flex items-center gap-1.5 justify-end">
+                      <span className="text-xs font-bold text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight">
+                        {profile.full_name}
+                      </span>
+                      <span
+                        className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                          isAdmin
+                            ? 'bg-purple-100 text-purple-800 border border-purple-200'
+                            : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                        }`}
+                      >
+                        {isAdmin ? 'Operations Staff' : 'Verified Customer'}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-slate-400 font-mono">{profile.phone_masked}</span>
                   </div>
-                  <span className="text-[11px] text-slate-400 font-mono">{profile.phone_masked}</span>
-                </div>
+
+                  <div className="relative w-9 h-9 rounded-full overflow-hidden border-2 border-slate-200 group-hover:border-indigo-500 shadow-xs transition-all shrink-0 bg-slate-100">
+                    <Image
+                      src={resolveAvatarUrl(profile.avatar_url, profile.full_name, profile.id)}
+                      alt={profile.full_name}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  </div>
+                </Link>
 
                 <button
                   type="button"
                   onClick={handleLogout}
                   title="Sign out"
-                  className="p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors border border-transparent hover:border-rose-100"
+                  className="p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors border border-transparent hover:border-rose-100 cursor-pointer"
                   aria-label="Sign out"
                 >
                   <LogOut className="w-4 h-4" />
@@ -305,6 +329,14 @@ export function Navbar() {
               >
                 <History className="w-4 h-4" />
                 Statements & History
+              </Link>
+              <Link
+                href="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"
+              >
+                <User className="w-4 h-4" />
+                Manage Profile & Settings
               </Link>
             </>
           )}
