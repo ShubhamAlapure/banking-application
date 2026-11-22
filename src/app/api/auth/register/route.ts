@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       updated_at: new Date().toISOString(),
     });
 
-    // 3. Ensure a primary active SAVINGS account exists with ₹50,000 opening bonus
+    // 3. Ensure a primary active SAVINGS account exists with ₹5,000 welcome balance
     const { data: existingAccs } = await serviceClient
       .from('accounts')
       .select('id')
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
         owner_id: userId,
         account_number: accNumber,
         account_type: 'SAVINGS',
-        balance: 50000.0,
+        balance: 5000.0,
         status: 'ACTIVE',
       });
     }

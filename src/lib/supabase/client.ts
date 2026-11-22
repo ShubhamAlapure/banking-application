@@ -96,7 +96,7 @@ export function createClient() {
           owner_id: newId,
           account_number: newAccNum,
           account_type: 'SAVINGS',
-          balance: 50000.0,
+          balance: 5000.0,
           status: 'ACTIVE',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),

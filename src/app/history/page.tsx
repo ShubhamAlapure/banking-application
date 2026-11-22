@@ -321,6 +321,7 @@ export default function HistoryPage() {
                     const isFailed = txn.status === 'FAILED';
                     const isPending = txn.status === 'PENDING_OTP';
                     const isCancelled = txn.status === 'CANCELLED';
+                    const isDeposit = (txn.remarks && (txn.remarks.includes('Deposit') || txn.remarks.includes('UPI')));
 
                     return (
                       <tr key={txn.id} className="hover:bg-slate-50/60 transition-colors">
@@ -332,14 +333,16 @@ export default function HistoryPage() {
                         </td>
                         <td className="py-3.5 px-4">
                           <div className="font-semibold text-slate-800">
-                            {txn.beneficiary?.beneficiary_name || maskAccountNumber(txn.to_account_number)}
+                            {isDeposit
+                              ? 'UPI Instant Top-Up'
+                              : txn.beneficiary?.beneficiary_name || maskAccountNumber(txn.to_account_number)}
                           </div>
                           <div className="text-[11px] font-mono text-slate-400">
                             {maskAccountNumber(txn.to_account_number)}
                           </div>
                         </td>
-                        <td className="py-3.5 px-4 font-bold text-slate-900 text-sm whitespace-nowrap">
-                          {formatCurrency(txn.amount)}
+                        <td className={`py-3.5 px-4 font-bold text-sm whitespace-nowrap ${isDeposit ? 'text-emerald-600' : 'text-slate-900'}`}>
+                          {isDeposit ? '+' : ''}{formatCurrency(txn.amount)}
                         </td>
                         <td className="py-3.5 px-4 text-slate-600 max-w-[200px] truncate">
                           {txn.remarks || '-'}
