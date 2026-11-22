@@ -16,54 +16,57 @@ async function run() {
   await page.waitForURL('**/dashboard', { timeout: 15000 });
   await page.waitForLoadState('networkidle');
 
-  // Dismiss welcome bonus modal if open
-  const closeBtn = page.locator('button:has-text("Explore Dashboard")').first();
-  if (await closeBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await closeBtn.click();
-    await page.waitForTimeout(500);
+  // Dismiss welcome bonus modal explicitly
+  console.log('2. Dismissing welcome modal if present...');
+  const exploreBtn = page.locator('button:has-text("Explore Dashboard")').first();
+  try {
+    await exploreBtn.waitFor({ state: 'visible', timeout: 3000 });
+    await exploreBtn.click();
+    await page.waitForTimeout(600);
+  } catch {
+    console.log('Welcome modal was already dismissed.');
   }
 
-  console.log('2. Verifying full Fintech Hub on Dashboard...');
-  await page.waitForSelector('text=Bills & recharges', { state: 'visible' });
-  await page.waitForSelector('text=Credit cards & loans', { state: 'visible' });
-  await page.waitForSelector('text=Offers & rewards', { state: 'visible' });
+  console.log('3. Verifying full Fintech Hub on Dashboard...');
+  await page.waitForSelector('text=Bills & recharges', { state: 'visible', timeout: 5000 });
+  await page.waitForSelector('text=Credit cards & loans', { state: 'visible', timeout: 5000 });
+  await page.waitForSelector('text=Offers & rewards', { state: 'visible', timeout: 5000 });
 
   // 1. Capture Full Dashboard in Light Mode
   await page.screenshot({ path: path.join(artifactDir, 'dashboard_fintech_hub_full.png'), fullPage: false });
   console.log('✓ Saved dashboard_fintech_hub_full.png');
 
   // 2. Open Mobile Recharge Modal
-  console.log('3. Testing Mobile Recharge Modal...');
-  await page.click('button:has-text("Mobile")');
-  await page.waitForSelector('text=Popular Unlimited Plans', { state: 'visible' });
+  console.log('4. Testing Mobile Recharge Modal...');
+  await page.locator('button:has-text("Mobile")').first().click();
+  await page.waitForSelector('text=Popular Unlimited Plans', { state: 'visible', timeout: 5000 });
   await page.screenshot({ path: path.join(artifactDir, 'service_modal_recharge.png') });
   console.log('✓ Saved service_modal_recharge.png');
-  await page.click('button:has-text("Done"), button:has(svg.lucide-x)').catch(() => page.keyboard.press('Escape'));
-  await page.waitForTimeout(400);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(500);
 
   // 3. Open CIBIL Score Modal
-  console.log('4. Testing CIBIL Score Modal...');
-  await page.click('button:has-text("CIBIL score")');
-  await page.waitForSelector('text=EXCELLENT', { state: 'visible' });
+  console.log('5. Testing CIBIL Score Modal...');
+  await page.locator('button:has-text("CIBIL score")').first().click();
+  await page.waitForSelector('text=EXCELLENT', { state: 'visible', timeout: 5000 });
   await page.screenshot({ path: path.join(artifactDir, 'service_modal_cibil.png') });
   console.log('✓ Saved service_modal_cibil.png');
   await page.click('button:has-text("Close Report")');
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(500);
 
   // 4. Open Rewards Modal
-  console.log('5. Testing Rewards & Scratch Card Modal...');
-  await page.click('button:has-text("Rewards")');
-  await page.waitForSelector('text=Lucky Scratch Card', { state: 'visible' });
-  // Tap scratch card
+  console.log('6. Testing Rewards & Scratch Card Modal...');
+  await page.locator('button:has-text("Rewards")').first().click();
+  await page.waitForSelector('text=Lucky Scratch Card', { state: 'visible', timeout: 5000 });
   await page.click('text=Tap to Scratch');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(600);
   await page.screenshot({ path: path.join(artifactDir, 'service_modal_rewards.png') });
   console.log('✓ Saved service_modal_rewards.png');
-  await page.click('button:has(svg.lucide-x)');
-  await page.waitForTimeout(400);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(500);
 
   // 5. Switch to Dark Mode to verify styling
-  console.log('6. Verifying Fintech Hub in Dark Mode...');
+  console.log('7. Verifying Fintech Hub in Dark Mode...');
   const themeToggle = page.locator('button[role="switch"]').first();
   await themeToggle.click();
   await page.waitForTimeout(600);
