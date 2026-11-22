@@ -8,49 +8,35 @@ async function capture() {
 
   const artifactDir = '/Users/shubhamalapure/.gemini/antigravity/brain/d1148c94-f38f-42c0-9cca-39dcff0f60fb';
 
-  // 1. Capture Homepage
+  // 1. Capture Homepage Hero
   await page.goto('http://localhost:3000/');
   await page.waitForLoadState('networkidle');
   await page.screenshot({ path: path.join(artifactDir, 'screenshot_home.png') });
   console.log('Captured screenshot_home.png');
 
-  // 2. Capture Login
-  await page.goto('http://localhost:3000/login');
-  await page.waitForLoadState('networkidle');
-  await page.screenshot({ path: path.join(artifactDir, 'screenshot_login.png') });
-  console.log('Captured screenshot_login.png');
+  // 2. Scroll into phone section entering (like Image 1)
+  await page.evaluate(() => window.scrollTo(0, 350));
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: path.join(artifactDir, 'landing_scroll_phone_initial.png') });
+  console.log('Captured landing_scroll_phone_initial.png');
 
-  // 3. Log in as Rahul
-  await page.fill('#email', 'rahul@demo.bank');
-  await page.fill('#password', 'Demo@12345');
-  await page.click('button[type="submit"]:has-text("Sign In")');
-  await page.waitForURL('**/dashboard');
-  await page.waitForLoadState('networkidle');
-  await page.screenshot({ path: path.join(artifactDir, 'screenshot_dashboard.png') });
-  console.log('Captured screenshot_dashboard.png');
+  // 3. Scroll down further where phone slides up into view (like Image 2 & 3)
+  await page.evaluate(() => window.scrollTo(0, 800));
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: path.join(artifactDir, 'landing_scroll_phone_revealed.png') });
+  console.log('Captured landing_scroll_phone_revealed.png');
 
-  // 4. Capture Transfer Page
-  await page.goto('http://localhost:3000/transfer');
-  await page.waitForLoadState('networkidle');
-  await page.screenshot({ path: path.join(artifactDir, 'screenshot_transfer.png') });
-  console.log('Captured screenshot_transfer.png');
+  // 4. Scroll into 'Times change.' section (like Image 4)
+  await page.evaluate(() => window.scrollTo(0, 1500));
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: path.join(artifactDir, 'landing_times_change.png') });
+  console.log('Captured landing_times_change.png');
 
-  // 5. Capture Beneficiaries Page
-  await page.goto('http://localhost:3000/beneficiaries');
-  await page.waitForLoadState('networkidle');
-  await page.screenshot({ path: path.join(artifactDir, 'screenshot_beneficiaries.png') });
-  console.log('Captured screenshot_beneficiaries.png');
-
-  // 6. Log out & Log in as Admin
-  await page.click('button[title="Sign out"]');
-  await page.waitForURL('**/login');
-  await page.fill('#email', 'admin@demo.bank');
-  await page.fill('#password', 'Admin@12345');
-  await page.click('button[type="submit"]:has-text("Sign In")');
-  await page.waitForURL('**/admin');
-  await page.waitForLoadState('networkidle');
-  await page.screenshot({ path: path.join(artifactDir, 'screenshot_admin.png') });
-  console.log('Captured screenshot_admin.png');
+  // 5. Scroll into 'at your fingertips' section (like Image 5)
+  await page.evaluate(() => window.scrollTo(0, 2200));
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: path.join(artifactDir, 'landing_at_fingertips.png') });
+  console.log('Captured landing_at_fingertips.png');
 
   await browser.close();
 }
