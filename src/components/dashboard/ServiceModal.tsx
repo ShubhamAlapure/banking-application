@@ -104,7 +104,14 @@ export default function ServiceModal({
       setScratched(false);
       setClaimedCashback(false);
     }
-  }, [isOpen, service]);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, service, onClose]);
 
   if (!isOpen || !service || !account) return null;
 
