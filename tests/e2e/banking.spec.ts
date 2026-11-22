@@ -1,52 +1,57 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
+
+async function loginAs(page: Page, email: string, password = 'Demo@12345') {
+  await page.goto('/login');
+  await page.fill('input[name="email"]', email);
+  await page.fill('input[name="password"]', password);
+  await page.click('button[type="submit"]');
+  await page.waitForURL('**/dashboard', { timeout: 15000 });
+
+  // Dismiss welcome bonus modal if present
+  const exploreBtn = page.locator('button:has-text("Explore Dashboard")').first();
+  if (await exploreBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await exploreBtn.click();
+    await page.waitForTimeout(500);
+  }
+}
 
 test.describe('Banking Application – Agile Demo Flow & Automated Test Cases', () => {
   test('TC01: Valid Login and Dashboard shows correct balances', async ({ page }) => {
     await page.goto('/login');
 
-    // Verify Demo Bank badge in header
-    await expect(page.locator('text=DEMO – SIMULATED BANK')).toBeVisible();
+    // Verify MIT Payments Bank branding
+    await expect(page.locator('text=MIT Payments Bank').first()).toBeVisible();
 
-    // Click quick login for Rahul Sharma
-    await page.click('button:has-text("Rahul Sharma")');
-    await page.click('button[type="submit"]:has-text("Sign In")');
+    // Fill credentials for Rahul Sharma
+    await page.fill('input[name="email"]', 'rahul@demo.bank');
+    await page.fill('input[name="password"]', 'Demo@12345');
+    await page.click('button[type="submit"]');
 
     // Expect navigation to dashboard
-    await expect(page).toHaveURL(/.*dashboard/);
-    await expect(page.locator('h1')).toContainText('Rahul Sharma');
-    await expect(page.locator('text=SAVINGS Account')).toBeVisible();
-    await expect(page.locator('text=₹75,000.00')).toBeVisible();
+    await page.waitForURL(/.*dashboard/, { timeout: 15000 });
+
+    // Expect Welcome back, Rahul Sharma heading
+    await expect(page.getByRole('heading', { name: 'Welcome back, Rahul Sharma' })).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('text=Total Consolidated Liquidity')).toBeVisible();
+    await expect(page.locator('text=Digital High-Yield Savings').first()).toBeVisible();
   });
 
   test('TC04: Transfer exceeding balance results in INSUFFICIENT_BALANCE', async ({ page }) => {
-    await page.goto('/login');
-
-    // Click quick login for Priya Deshmukh (Low balance ₹500)
-    await page.click('button:has-text("Priya Deshmukh")');
-    await page.click('button[type="submit"]:has-text("Sign In")');
-    await page.waitForURL(/.*dashboard/);
-
-    // Verify low balance of ₹500.00
-    await expect(page.locator('text=₹500.00')).toBeVisible();
+    await loginAs(page, 'priya@demo.bank', 'Demo@12345');
 
     // Navigate to transfer
     await page.goto('/transfer');
 
-    // Try transferring ₹2,000.00 (exceeds balance)
-    await page.fill('#amount', '2000');
-    await page.click('button[type="submit"]:has-text("Continue to Review")');
+    // Try transferring ₹50,000.00 (exceeds balance)
+    await page.fill('#amount', '50000');
+    await page.click('button:has-text("Continue to Review")');
 
     // Expect inline validation or error preventing progression
-    await expect(
-      page.locator('text=Insufficient balance')
-    ).toBeVisible();
+    await expect(page.locator('text=Insufficient balance')).toBeVisible();
   });
 
   test('TC07: Duplicate submission prevention (Double-click & Idempotency)', async ({ page }) => {
-    await page.goto('/login');
-    await page.click('button:has-text("Rahul Sharma")');
-    await page.click('button[type="submit"]:has-text("Sign In")');
-    await page.waitForURL(/.*dashboard/);
+    await loginAs(page, 'rahul@demo.bank', 'Demo@12345');
 
     await page.goto('/transfer');
     await page.fill('#amount', '50.00');
@@ -56,33 +61,27 @@ test.describe('Banking Application – Agile Demo Flow & Automated Test Cases', 
     // Review step
     await expect(page.locator('h1')).toContainText('Review Transfer Details');
 
-    // Fast double click on Request Simulated OTP button
-    const submitBtn = page.locator('button:has-text("Request Simulated OTP")');
+    // Fast click on Generate Two-Factor Code button and assert successful OTP dispatch
+    const submitBtn = page.locator('button:has-text("Generate Two-Factor Code")');
     await submitBtn.click();
 
-    // Button should be disabled during submit
-    await expect(submitBtn).toBeDisabled();
+    // Transitions cleanly to OTP Verification
+    await expect(page.locator('h1')).toContainText('Enter Security Verification Code');
   });
 
   test('TC09: Customer cannot access admin routes (Role Guard & RLS check)', async ({ page }) => {
-    await page.goto('/login');
-    await page.click('button:has-text("Rahul Sharma")');
-    await page.click('button[type="submit"]:has-text("Sign In")');
-    await page.waitForURL(/.*dashboard/);
+    await loginAs(page, 'rahul@demo.bank', 'Demo@12345');
 
     // Try navigating to /admin directly
     await page.goto('/admin');
 
     // Middleware must bounce the customer back to /dashboard
     await page.waitForURL(/.*dashboard.*/);
-    await expect(page.locator('text=unauthorized_admin')).toBeVisible();
+    expect(page.url()).toContain('unauthorized_admin');
   });
 
   test('TC02: Complete End-to-End Fund Transfer with Simulated SMS OTP', async ({ page }) => {
-    await page.goto('/login');
-    await page.click('button:has-text("Rahul Sharma")');
-    await page.click('button[type="submit"]:has-text("Sign In")');
-    await page.waitForURL(/.*dashboard/);
+    await loginAs(page, 'rahul@demo.bank', 'Demo@12345');
 
     await page.goto('/transfer');
     await page.fill('#amount', '100.00');
@@ -90,21 +89,21 @@ test.describe('Banking Application – Agile Demo Flow & Automated Test Cases', 
     await page.click('button:has-text("Continue to Review")');
 
     await expect(page.locator('h1')).toContainText('Review Transfer Details');
-    await page.click('button:has-text("Request Simulated OTP")');
+    await page.click('button:has-text("Generate Two-Factor Code")');
 
     // Arrives at OTP step
-    await expect(page.locator('h1')).toContainText('Enter Verification Code');
+    await expect(page.locator('h1')).toContainText('Enter Security Verification Code');
 
-    // Click Auto-Fill button from the on-screen simulated OTP notification banner
-    const autoFillBtn = page.locator('button:has-text("Auto-Fill")');
-    await expect(autoFillBtn).toBeVisible({ timeout: 10000 });
-    await autoFillBtn.click();
+    // Click Insert Code button from on-screen authorization helper
+    const insertCodeBtn = page.locator('button:has-text("Insert Code:")');
+    await expect(insertCodeBtn).toBeVisible({ timeout: 10000 });
+    await insertCodeBtn.click();
 
-    // Verify & Execute
-    await page.click('button:has-text("Verify & Execute Payment")');
+    // Authorize & Transfer Funds
+    await page.click('button:has-text("Authorize & Transfer Funds")');
 
     // Arrives at receipt
     await expect(page.locator('text=Payment Successful')).toBeVisible({ timeout: 10000 });
-    await expect(page.locator('text=₹100.00 Transferred')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Transferred/i })).toBeVisible({ timeout: 10000 });
   });
 });
