@@ -63,28 +63,42 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password: password,
-        options: {
-          data: {
-            full_name: fullName.trim(),
-            role: 'customer',
-          },
-        },
+      // 1. Call dedicated registration endpoint (auto-confirms email and provisions ₹50k account)
+      const regRes = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password,
+          fullName: fullName.trim(),
+        }),
       });
 
-      if (error) {
-        setErrorMsg(error.message);
+      const regData = await regRes.json();
+
+      if (!regData.success) {
+        setErrorMsg(regData.message || 'Registration failed.');
         setLoading(false);
         return;
       }
 
-      if (data.user) {
+      // 2. Sign in immediately to establish active session
+      const { data: loginData, error: loginErr } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password,
+      });
+
+      if (loginErr) {
+        setErrorMsg('Account created, but automatic sign-in failed. Please visit the Sign In page.');
+        setLoading(false);
+        return;
+      }
+
+      if (loginData.user) {
         addToast({
           type: 'success',
           title: 'Account Opened Successfully!',
-          message: 'Welcome to MIT Payments Bank. Your primary digital account is now active.',
+          message: 'Welcome to MIT Payments Bank. Your digital account is active with ₹50,000 opening credit.',
         });
 
         router.push('/dashboard');

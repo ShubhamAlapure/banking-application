@@ -45,10 +45,31 @@ function LoginForm() {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      let { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password,
       });
+
+      // Auto-confirm fallback: if Supabase email confirmation gate triggers, auto-verify via server
+      if (error && error.message.toLowerCase().includes('not confirmed')) {
+        try {
+          await fetch('/api/auth/confirm-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email.trim() }),
+          });
+
+          // Immediate retry
+          const retryResult = await supabase.auth.signInWithPassword({
+            email: email.trim(),
+            password: password,
+          });
+          data = retryResult.data;
+          error = retryResult.error;
+        } catch (confirmErr) {
+          console.error('Auto-confirm attempt error:', confirmErr);
+        }
+      }
 
       if (error) {
         setErrorMsg(error.message || 'Incorrect email or password. Please verify your credentials.');
