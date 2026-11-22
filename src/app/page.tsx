@@ -18,10 +18,32 @@ import {
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 selection:bg-indigo-600 selection:text-white">
-      {/* Hero Section */}
+    <div className="flex flex-col min-h-screen bg-transparent selection:bg-indigo-600 selection:text-white">
+      {/* Hero Section with Illuminating Squares Grid */}
       <section className="relative overflow-hidden pt-16 pb-24 lg:pt-28 lg:pb-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-        <div className="text-center max-w-4xl mx-auto">
+        {/* Illuminating Squares Grid Background */}
+        <div className="absolute inset-0 pointer-events-none select-none overflow-hidden -z-0">
+          {/* Ambient Radial Illumination */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[480px] bg-gradient-to-tr from-indigo-500/15 via-blue-500/10 to-teal-400/10 blur-[100px] rounded-full" />
+          
+          {/* High-Tech Squares Grid Pattern */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(99,102,241,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(99,102,241,0.08)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_80%_65%_at_50%_45%,black_35%,transparent_85%)]" />
+
+          {/* Lightly Illuminating Square Tiles */}
+          <div className="absolute top-[48px] left-[15%] w-[48px] h-[48px] bg-indigo-500/15 border border-indigo-400/40 rounded-xl animate-tile-slow" />
+          <div className="absolute top-[96px] right-[18%] w-[48px] h-[48px] bg-blue-500/15 border border-blue-400/40 rounded-xl animate-tile-fast" />
+          <div className="absolute top-[144px] left-[8%] w-[48px] h-[48px] bg-sky-500/15 border border-sky-400/40 rounded-xl animate-tile-cyan" />
+          <div className="absolute top-[192px] right-[10%] w-[48px] h-[48px] bg-indigo-500/15 border border-indigo-400/40 rounded-xl animate-tile-slow" />
+          <div className="absolute top-[144px] left-[78%] w-[48px] h-[48px] bg-blue-500/15 border border-blue-400/40 rounded-xl animate-tile-fast" />
+          <div className="absolute top-[240px] left-[18%] w-[48px] h-[48px] bg-violet-500/15 border border-violet-400/40 rounded-xl animate-tile-slow" />
+          <div className="absolute top-[288px] right-[24%] w-[48px] h-[48px] bg-indigo-500/20 border border-indigo-400/50 rounded-xl animate-tile-cyan" />
+          <div className="absolute top-[336px] left-[32%] w-[48px] h-[48px] bg-sky-500/15 border border-sky-400/40 rounded-xl animate-tile-fast" />
+          <div className="absolute top-[384px] right-[16%] w-[48px] h-[48px] bg-teal-500/15 border border-teal-400/40 rounded-xl animate-tile-slow" />
+          <div className="absolute top-[240px] right-[38%] w-[48px] h-[48px] bg-indigo-500/15 border border-indigo-400/40 rounded-xl animate-tile-slow" />
+          <div className="absolute top-[96px] left-[44%] w-[48px] h-[48px] bg-indigo-400/15 border border-indigo-300/40 rounded-xl animate-tile-fast" />
+        </div>
+
+        <div className="relative z-10 text-center max-w-4xl mx-auto">
           {/* Regulatory Trust Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100/80 text-indigo-700 text-xs font-bold uppercase tracking-wider mb-8 shadow-2xs">
             <ShieldCheck className="w-4 h-4 text-indigo-600" />

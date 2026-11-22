@@ -34,7 +34,7 @@ export default function RootLayout({
     >
       <body
         suppressHydrationWarning
-        className="min-h-full flex flex-col bg-slate-50 text-slate-900 selection:bg-indigo-600 selection:text-white font-sans"
+        className="min-h-full flex flex-col text-slate-900 selection:bg-indigo-600 selection:text-white font-sans"
       >
         <DemoProvider>
           <Navbar />
