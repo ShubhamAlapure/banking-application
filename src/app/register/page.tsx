@@ -102,8 +102,8 @@ export default function RegisterPage() {
     <div className="min-h-[85vh] flex items-center justify-center px-4 py-12">
       <div className="max-w-md w-full space-y-6">
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-100 mb-3.5">
-            <Building2 className="w-7 h-7" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-white p-2 shadow-lg shadow-indigo-100/80 border border-slate-200/80 mb-3.5">
+            <img src="/logo.jpg" alt="Apex Trust Bank" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
             Open a Premier Account
