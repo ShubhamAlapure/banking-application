@@ -3,9 +3,13 @@ import { createServiceClient } from '@/lib/supabase/service';
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password, fullName } = await req.json();
+    const { email, password, fullName, phone } = await req.json();
     const cleanEmail = email.toLowerCase().trim();
     const cleanName = fullName.trim();
+    const cleanDigits = phone ? String(phone).replace(/\D/g, '').slice(-10) : '';
+    const visiblePhone = cleanDigits && cleanDigits.length === 10
+      ? `+91 ${cleanDigits.slice(0, 5)} ${cleanDigits.slice(5)}`
+      : `+91 98${Math.floor(10000000 + Math.random() * 90000000).toString().slice(0, 8)}`;
 
     const serviceClient = createServiceClient();
 
@@ -21,7 +25,7 @@ export async function POST(req: NextRequest) {
       await serviceClient.auth.admin.updateUserById(userId, {
         password,
         email_confirm: true,
-        user_metadata: { full_name: cleanName, role: 'customer' },
+        user_metadata: { full_name: cleanName, role: 'customer', phone: visiblePhone },
       });
     } else {
       // Create user with email_confirm: true so no verification email gate is required
@@ -29,7 +33,7 @@ export async function POST(req: NextRequest) {
         email: cleanEmail,
         password,
         email_confirm: true,
-        user_metadata: { full_name: cleanName, role: 'customer' },
+        user_metadata: { full_name: cleanName, role: 'customer', phone: visiblePhone },
       });
 
       if (createErr || !newUser.user) {
@@ -41,13 +45,12 @@ export async function POST(req: NextRequest) {
       userId = newUser.user.id;
     }
 
-    // 2. Ensure Profile exists in public.profiles
-    const maskedPhone = '+91 98*** **' + Math.floor(100 + Math.random() * 900);
+    // 2. Ensure Profile exists in public.profiles with visible mobile number
     await serviceClient.from('profiles').upsert({
       id: userId,
       full_name: cleanName,
       role: 'customer',
-      phone_masked: maskedPhone,
+      phone_masked: visiblePhone,
       updated_at: new Date().toISOString(),
     });
 

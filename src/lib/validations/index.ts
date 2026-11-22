@@ -11,6 +11,12 @@ export const otpRegex = /^\d{6}$/;
 
 export const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit mobile number')
+    .optional()
+    .or(z.literal('')),
   password: z.string().min(1, 'Password is required'),
 });
 
@@ -22,6 +28,12 @@ export const registerSchema = z.object({
     .max(60, 'Full name cannot exceed 60 characters')
     .regex(/^[\p{L}\s.'-]+$/u, 'Full name contains invalid characters'),
   email: z.string().email('Please enter a valid email address'),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit mobile number')
+    .optional()
+    .or(z.literal('')),
   password: z
     .string()
     .min(8, 'Password must be at least 8 characters long')

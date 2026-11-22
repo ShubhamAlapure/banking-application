@@ -20,6 +20,9 @@ import {
   Send,
   Eye,
   EyeOff,
+  Phone,
+  Loader2,
+  Sparkles,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -46,6 +49,60 @@ export default function BeneficiariesPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [unmaskedId, setUnmaskedId] = useState<string | null>(null);
+
+  // Quick Mobile Number Search states
+  const [searchPhone, setSearchPhone] = useState('');
+  const [searchingPhone, setSearchingPhone] = useState(false);
+  const [phoneLookupResult, setPhoneLookupResult] = useState<{
+    fullName: string;
+    phone: string;
+    accountNumber: string;
+    bankName: string;
+  } | null>(null);
+  const [phoneSearchError, setPhoneSearchError] = useState<string | null>(null);
+
+  const handleSearchByPhone = async () => {
+    const clean = searchPhone.replace(/\D/g, '').slice(-10);
+    if (!clean || clean.length < 10) {
+      setPhoneSearchError('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+    setSearchingPhone(true);
+    setPhoneSearchError(null);
+    setPhoneLookupResult(null);
+
+    try {
+      const res = await fetch('/api/account/lookup-by-phone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: clean }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setPhoneSearchError(data.message || 'No user found with this mobile number.');
+        return;
+      }
+
+      setPhoneLookupResult({
+        fullName: data.user.fullName,
+        phone: data.user.phone,
+        accountNumber: data.account.accountNumber,
+        bankName: data.account.bankName,
+      });
+
+      // Auto-fill form fields!
+      setBeneficiaryName(data.user.fullName);
+      setAccountNumber(data.account.accountNumber);
+      setBankName(data.account.bankName);
+      setNickname(`${data.user.fullName.split(' ')[0]} MIT`);
+      setFormError(null);
+    } catch (err: any) {
+      console.error('Phone search error:', err);
+      setPhoneSearchError('Failed to search user by mobile number.');
+    } finally {
+      setSearchingPhone(false);
+    }
+  };
 
   const supabase = createClient();
 
@@ -445,6 +502,76 @@ export default function BeneficiariesPage() {
                 <span>{formError}</span>
               </div>
             )}
+
+            {/* Quick Search by Mobile Number */}
+            <div className="mt-4 p-4 bg-gradient-to-br from-indigo-50/90 to-purple-50/60 border border-indigo-100 rounded-2xl space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Search MIT Account by Mobile Number</span>
+                </span>
+                <span className="text-[10px] font-extrabold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5" />
+                  <span>INSTANT</span>
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-xs font-bold text-slate-400">
+                    +91
+                  </span>
+                  <input
+                    type="tel"
+                    maxLength={10}
+                    value={searchPhone}
+                    onChange={(e) => setSearchPhone(e.target.value.replace(/\D/g, ''))}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSearchByPhone();
+                      }
+                    }}
+                    placeholder="e.g. 9322610932"
+                    className="w-full pl-10 pr-3 py-2 text-xs font-mono bg-white border border-indigo-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 font-semibold"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSearchByPhone}
+                  disabled={searchingPhone || searchPhone.length < 10}
+                  className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1 cursor-pointer"
+                >
+                  {searchingPhone ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Search className="w-3.5 h-3.5" />
+                  )}
+                  <span>Find Account</span>
+                </button>
+              </div>
+
+              {phoneSearchError && (
+                <p className="text-[11px] text-rose-600 font-semibold">{phoneSearchError}</p>
+              )}
+
+              {phoneLookupResult && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs text-emerald-900">
+                  <div className="flex items-center gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <span className="font-extrabold block text-slate-900">{phoneLookupResult.fullName}</span>
+                      <span className="text-[11px] font-mono text-emerald-800">
+                        {phoneLookupResult.phone} • A/C: {phoneLookupResult.accountNumber} • {phoneLookupResult.bankName}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-extrabold bg-emerald-600 text-white px-2 py-0.5 rounded-full shrink-0">
+                    Auto-Filled Below
+                  </span>
+                </div>
+              )}
+            </div>
 
             <form onSubmit={handleAddBeneficiary} className="space-y-4 mt-4" noValidate>
               <div>

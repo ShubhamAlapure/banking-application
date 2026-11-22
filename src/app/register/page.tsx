@@ -24,6 +24,7 @@ export default function RegisterPage() {
   const { addToast } = useDemo();
 
   const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -49,9 +50,16 @@ export default function RegisterPage() {
       return;
     }
 
+    const cleanDigits = phone.replace(/\D/g, '');
+    if (!cleanDigits || cleanDigits.length !== 10) {
+      setErrorMsg('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+
     const validation = registerSchema.safeParse({
       fullName,
       email,
+      phone: cleanDigits,
       password,
       confirmPassword,
     });
@@ -63,7 +71,7 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      // 1. Call dedicated registration endpoint (auto-confirms email and provisions ₹50k account)
+      // 1. Call dedicated registration endpoint (auto-confirms email and provisions ₹5,000 account)
       const regRes = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -71,6 +79,7 @@ export default function RegisterPage() {
           email: email.trim(),
           password: password,
           fullName: fullName.trim(),
+          phone: cleanDigits,
         }),
       });
 
@@ -180,6 +189,34 @@ export default function RegisterPage() {
                   className="block w-full pl-10 pr-3.5 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors font-medium"
                 />
               </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="phone"
+                className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5"
+              >
+                Mobile Number *
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-bold text-xs">
+                  +91
+                </div>
+                <input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  maxLength={10}
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                  placeholder="93226 10932"
+                  className="block w-full pl-12 pr-3.5 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors font-medium font-mono"
+                />
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1">
+                Used for instant UPI payee lookups and banking SMS notifications.
+              </p>
             </div>
 
             <div>
